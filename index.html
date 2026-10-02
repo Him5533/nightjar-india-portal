@@ -1,0 +1,1443 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nightjar India Portal</title>
+<!-- The whole portal in one file: every page, the styling, the scripts and all 209 records. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+/* Nightjar India Portal
+   Palette comes from how nightjars are actually found: a dark road, a torch beam, one amber eye. */
+:root {
+  --night: #141a2e;      /* sky after dusk */
+  --dusk: #2b2f55;       /* last light */
+  --moon: #edeff5;       /* page ground */
+  --paper: #ffffff;
+  --ink: #171b2b;
+  --muted: #565d75;
+  --line: #d3d7e3;
+  --eye: #f2a93b;        /* eyeshine */
+  --eye-deep: #a8660a;   /* eyeshine, readable on light */
+  --bark: #7a6248;       /* plumage */
+  --ok: #2f6b55;
+  --bad: #a8322d;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --r: 6px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--moon); color: var(--ink);
+  font: 400 1.0625rem/1.6 var(--body);
+  min-height: 100vh; display: flex; flex-direction: column;
+}
+main { flex: 1; }
+img, svg { max-width: 100%; display: block; }
+a { color: var(--dusk); text-underline-offset: 3px; }
+a:hover { color: var(--eye-deep); }
+h1, h2, h3 { font-family: var(--display); line-height: 1.12; margin: 0 0 .5em; letter-spacing: -.015em; text-wrap: balance; }
+h1 { font-size: clamp(2.1rem, 5vw, 3.5rem); font-weight: 700; }
+h2 { font-size: clamp(1.55rem, 3vw, 2.1rem); font-weight: 650; }
+h3 { font-size: 1.15rem; font-weight: 650; }
+p { margin: 0 0 1em; max-width: 68ch; }
+:focus-visible { outline: 3px solid var(--eye); outline-offset: 2px; border-radius: 2px; }
+
+.wrap { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+.section { padding: 64px 0; }
+.section.tight { padding: 40px 0; }
+.on-paper { background: var(--paper); }
+.lede { font-size: 1.2rem; color: var(--muted); }
+.muted { color: var(--muted); }
+.small { font-size: .92rem; }
+.hidden { display: none !important; }
+
+/* ---------- Header ---------- */
+.skip { position: absolute; left: -999px; top: 0; background: var(--eye); color: var(--ink); padding: 8px 12px; z-index: 50; }
+.skip:focus { left: 8px; top: 8px; }
+.site-header { background: var(--night); color: #fff; position: sticky; top: 0; z-index: 30; }
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 60px; }
+.brand { font-family: var(--display); font-weight: 700; font-size: 1.1rem; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 10px; }
+.brand:hover { color: #fff; }
+.eye { width: 11px; height: 11px; border-radius: 50%; background: var(--eye); box-shadow: 0 0 0 4px rgba(242,169,59,.22), 0 0 14px 3px rgba(242,169,59,.55); }
+#nav { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+#nav a { color: #cfd4e6; text-decoration: none; padding: 8px 12px; border-radius: var(--r); font-size: .98rem; }
+#nav a:hover { color: #fff; background: rgba(255,255,255,.08); }
+#nav a[aria-current=page] { color: #fff; box-shadow: inset 0 -2px 0 var(--eye); border-radius: 0; }
+#nav-user { display: flex; align-items: center; gap: 4px; }
+#nav a.nav-cta { color: var(--ink); background: var(--eye); font-weight: 700; max-width: 16ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#nav a.nav-cta:hover { background: #ffc266; color: var(--ink); }
+.menu-btn { display: none; background: none; border: 1px solid #58608a; color: #fff; padding: 7px 14px; border-radius: var(--r); font: inherit; cursor: pointer; }
+.demo-note { background: #fff3d6; border-bottom: 1px solid #e6cf94; font-size: .92rem; padding: 8px 0; }
+
+@media (max-width: 860px) {
+  .menu-btn { display: block; }
+  #nav { display: none; position: absolute; left: 0; right: 0; top: 60px; background: var(--night); padding: 8px 20px 18px; flex-direction: column; align-items: stretch; }
+  #nav.open { display: flex; }
+  #nav-user { flex-direction: column; align-items: stretch; }
+  #nav a.nav-cta { max-width: none; text-align: center; margin-top: 8px; }
+}
+
+/* ---------- Buttons and forms ---------- */
+.btn {
+  display: inline-block; font: 700 1rem var(--body); cursor: pointer; text-decoration: none; text-align: center;
+  padding: 12px 20px; border-radius: var(--r); border: 2px solid var(--night); background: var(--night); color: #fff;
+}
+.btn:hover { background: var(--dusk); border-color: var(--dusk); color: #fff; }
+.btn.amber { background: var(--eye); border-color: var(--eye); color: var(--ink); }
+.btn.amber:hover { background: #ffc266; border-color: #ffc266; color: var(--ink); }
+.btn.ghost { background: transparent; color: var(--night); }
+.btn.ghost:hover { background: var(--night); color: #fff; }
+.btn.sm { padding: 7px 12px; font-size: .92rem; }
+.btn.danger { background: transparent; color: var(--bad); border-color: var(--bad); }
+.btn.danger:hover { background: var(--bad); color: #fff; }
+.btn:disabled { opacity: .6; cursor: progress; }
+
+label { display: block; font-weight: 700; font-size: .95rem; margin-bottom: 5px; }
+.hint { display: block; font-weight: 400; color: var(--muted); font-size: .88rem; }
+input, select, textarea {
+  width: 100%; font: inherit; color: var(--ink); background: var(--paper);
+  border: 1.5px solid #9aa1b8; border-radius: var(--r); padding: 10px 12px;
+}
+textarea { min-height: 110px; resize: vertical; }
+input[type=checkbox] { width: 20px; height: 20px; flex: none; margin-top: 3px; accent-color: var(--dusk); }
+input[type=file] { padding: 8px; background: var(--moon); }
+.field { margin-bottom: 18px; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.check { display: flex; gap: 10px; align-items: flex-start; font-weight: 400; }
+.hp { position: absolute; left: -9999px; }
+@media (max-width: 640px) { .row2, .row3 { grid-template-columns: 1fr; gap: 0; } }
+
+.panel { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 28px; }
+.narrow { max-width: 640px; }
+.notice { border-left: 5px solid var(--eye); background: #fff8e8; padding: 14px 18px; border-radius: 0 var(--r) var(--r) 0; margin-bottom: 20px; }
+.notice.ok { border-color: var(--ok); background: #e9f3ee; }
+.notice.bad { border-color: var(--bad); background: #f9e9e8; }
+.notice p:last-child { margin-bottom: 0; }
+
+.tag { display: inline-block; font-size: .82rem; font-weight: 700; padding: 2px 9px; border-radius: 99px; background: var(--moon); color: var(--dusk); border: 1px solid var(--line); }
+.tag.guj { background: #fff1d3; border-color: #ebca85; color: #6d4405; }
+.tag.pending, .tag.new { background: #fff1d3; border-color: #ebca85; color: #6d4405; }
+.tag.approved, .tag.accepted { background: #e2f0e9; border-color: #a9cdbb; color: #1e4c3b; }
+.tag.rejected { background: #f9e4e2; border-color: #e2b0ac; color: #7c221e; }
+
+#toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
+  background: var(--night); color: #fff; padding: 12px 20px; border-radius: var(--r); max-width: min(90vw, 520px);
+  transition: opacity .2s, transform .2s; z-index: 100; border-left: 5px solid var(--eye);
+}
+#toast.show { opacity: 1; transform: translate(-50%, 0); }
+#toast.bad { border-left-color: #ff7a73; }
+
+/* ---------- Home: hero ---------- */
+.hero { background: linear-gradient(180deg, var(--night) 0%, #1b2140 62%, var(--dusk) 100%); color: #fff; overflow: hidden; }
+.hero-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 32px; align-items: end; padding-top: 64px; }
+.hero-copy { padding-bottom: 64px; }
+.hero h1 { color: #fff; max-width: 15ch; }
+.hero .lede { color: #c5cbe2; max-width: 46ch; }
+.hero-search { display: flex; gap: 8px; margin: 28px 0 16px; max-width: 520px; }
+.hero-search input { border-color: transparent; padding: 14px 16px; }
+.hero-search .btn { white-space: nowrap; }
+.hero-facts { color: #c5cbe2; font-size: .98rem; margin: 0; }
+.hero-facts b { color: var(--eye); font-family: var(--display); font-size: 1.15rem; }
+.scene { width: 100%; height: auto; align-self: end; }
+.scene .beam { transform-origin: 40px 250px; animation: sweep 1.6s cubic-bezier(.2,.7,.2,1) both; }
+.scene .shine { animation: lightup .5s 1.5s both; }
+.scene .halo { animation: lightup .9s 1.5s both; }
+@keyframes sweep { from { transform: rotate(-26deg); opacity: 0; } to { transform: rotate(0); opacity: 1; } }
+@keyframes lightup { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .scene .beam, .scene .shine, .scene .halo { animation: none; } html { scroll-behavior: auto; } }
+@media (max-width: 860px) {
+  .hero-grid { grid-template-columns: 1fr; padding-top: 44px; gap: 0; }
+  .hero-copy { padding-bottom: 20px; }
+  .hero-search { flex-direction: column; }
+}
+
+/* ---------- Home: sections ---------- */
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+@media (max-width: 860px) { .split { grid-template-columns: 1fr; gap: 28px; } }
+
+.bars { list-style: none; margin: 0; padding: 0; }
+.bars li { display: grid; grid-template-columns: 11.5em 1fr 3em; gap: 12px; align-items: center; padding: 7px 0; font-size: .98rem; }
+.bars .track { height: 12px; background: var(--moon); border-radius: 99px; overflow: hidden; }
+.bars .fill { display: block; height: 100%; min-width: 4px; background: var(--bark); border-radius: 99px; }
+.bars .n { text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+@media (max-width: 480px) { .bars li { grid-template-columns: 8.5em 1fr 2.5em; font-size: .9rem; } }
+
+.grant { background: var(--night); color: #fff; }
+.grant h2 { color: #fff; }
+.grant p { color: #d5d9ea; }
+.grant a { color: var(--eye); }
+.grant blockquote { margin: 0; padding: 22px 24px; border-left: 5px solid var(--eye); background: rgba(255,255,255,.06); border-radius: 0 var(--r) var(--r) 0; font-family: var(--display); font-size: 1.2rem; line-height: 1.35; }
+.grant blockquote footer { font-family: var(--body); font-size: .92rem; color: #b9c0dc; margin-top: 12px; }
+
+.steps { list-style: none; counter-reset: s; margin: 28px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+.steps li { counter-increment: s; border-top: 3px solid var(--night); padding-top: 14px; }
+.steps li::before { content: counter(s); font: 700 2rem var(--display); color: var(--eye-deep); display: block; line-height: 1; margin-bottom: 8px; }
+.steps p { margin: 0; color: var(--muted); }
+@media (max-width: 760px) { .steps { grid-template-columns: 1fr; } }
+
+.species { list-style: none; margin: 24px 0 0; padding: 0; columns: 2; column-gap: 48px; }
+.species li { break-inside: avoid; padding: 13px 0; border-bottom: 1px solid var(--line); }
+.species b { font-family: var(--display); font-size: 1.08rem; }
+.species i { color: var(--bark); margin-left: 6px; }
+.species span { display: block; color: var(--muted); font-size: .95rem; }
+@media (max-width: 760px) { .species { columns: 1; } }
+
+.two-cta { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.two-cta .panel { display: flex; flex-direction: column; align-items: flex-start; }
+.two-cta .panel p { flex: 1; }
+@media (max-width: 760px) { .two-cta { grid-template-columns: 1fr; } }
+
+/* ---------- Page heads ---------- */
+.page-head { background: var(--night); color: #fff; padding: 44px 0 36px; }
+.page-head h1 { font-size: clamp(1.9rem, 4vw, 2.6rem); margin-bottom: .3em; }
+.page-head p { color: #c5cbe2; margin: 0; }
+
+/* ---------- Database ---------- */
+.filters { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 14px; align-items: end; }
+.filters .field { margin: 0; }
+.filters-2 { display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: end; margin-top: 14px; }
+.filters-2 .yr { width: 7em; }
+@media (max-width: 860px) { .filters { grid-template-columns: 1fr 1fr; } .filters .q { grid-column: 1 / -1; } }
+@media (max-width: 480px) { .filters { grid-template-columns: 1fr; } }
+
+.result-bar { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; margin: 24px 0 12px; }
+.result-bar .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.result-bar select { width: auto; padding: 7px 10px; }
+#map { height: 380px; border-radius: 10px; border: 1px solid var(--line); margin-bottom: 16px; z-index: 1; }
+
+.records { list-style: none; margin: 0; padding: 0; }
+.records details { background: var(--paper); border: 1px solid var(--line); border-radius: var(--r); margin-bottom: 8px; }
+.records details[open] { border-color: var(--dusk); }
+.records summary { list-style: none; cursor: pointer; padding: 14px 18px; display: grid; grid-template-columns: 4.2em 1fr; gap: 14px; }
+.records summary::-webkit-details-marker { display: none; }
+.records summary:hover .t { color: var(--eye-deep); }
+.records .y { font: 700 1.15rem var(--display); color: var(--bark); font-variant-numeric: tabular-nums; }
+.records .t { font-weight: 700; display: block; line-height: 1.35; }
+.records .a { display: block; color: var(--muted); font-size: .93rem; margin: 3px 0 7px; }
+.records .tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.records dl { margin: 0; padding: 4px 18px 18px calc(4.2em + 32px); display: grid; grid-template-columns: 9em 1fr; gap: 6px 14px; font-size: .96rem; }
+.records dt { color: var(--muted); }
+.records dd { margin: 0; overflow-wrap: anywhere; }
+@media (max-width: 560px) {
+  .records summary { grid-template-columns: 1fr; gap: 2px; }
+  .records dl { padding-left: 18px; grid-template-columns: 1fr; gap: 0; }
+  .records dd { margin-bottom: 8px; }
+}
+.pager { display: flex; gap: 12px; justify-content: center; align-items: center; margin-top: 20px; }
+.empty { text-align: center; padding: 48px 20px; color: var(--muted); background: var(--paper); border: 1px dashed #9aa1b8; border-radius: 10px; }
+.empty h3 { color: var(--ink); }
+.empty p { margin-left: auto; margin-right: auto; }
+
+/* ---------- Awareness ---------- */
+.materials { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+.materials li { background: var(--paper); border: 1px solid var(--line); border-top: 5px solid var(--bark); border-radius: var(--r); padding: 20px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.materials p { flex: 1; margin: 0; color: var(--muted); }
+
+/* ---------- Admin ---------- */
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; border-bottom: 2px solid var(--line); margin-bottom: 24px; }
+.tabs button { font: 700 1rem var(--body); background: none; border: 0; padding: 12px 16px; cursor: pointer; color: var(--muted); border-bottom: 3px solid transparent; margin-bottom: -2px; }
+.tabs button[aria-selected=true] { color: var(--ink); border-bottom-color: var(--eye); }
+.cards { list-style: none; margin: 0; padding: 0; }
+.cards > li { background: var(--paper); border: 1px solid var(--line); border-radius: var(--r); padding: 18px 20px; margin-bottom: 10px; }
+.cards .top { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: baseline; }
+.cards .who { font-weight: 700; }
+.cards p { margin: 8px 0; overflow-wrap: anywhere; }
+.cards .acts { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.cards img { max-height: 220px; border-radius: var(--r); margin: 10px 0; }
+
+/* ---------- Footer ---------- */
+.site-footer { background: var(--night); color: #b9c0dc; padding: 40px 0; margin-top: 0; font-size: .95rem; }
+.site-footer strong { color: #fff; font-family: var(--display); font-size: 1.05rem; }
+.site-footer a { color: var(--eye); }
+.foot { display: grid; grid-template-columns: 1.1fr 1.3fr 1fr; gap: 32px; }
+.foot p { margin: 6px 0 0; }
+@media (max-width: 760px) { .foot { grid-template-columns: 1fr; gap: 16px; } }
+
+/* ---------- Search hints ---------- */
+.suggest { position: relative; flex: 1; min-width: 0; }
+.hints {
+  position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 20;
+  list-style: none; margin: 0; padding: 4px; max-height: 340px; overflow-y: auto;
+  background: var(--paper); color: var(--ink); text-align: left;
+  border: 1.5px solid var(--night); border-radius: var(--r); box-shadow: 0 12px 28px rgba(20, 26, 46, .28);
+}
+.hints li { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; padding: 9px 12px; border-radius: 4px; cursor: pointer; }
+.hints li:hover, .hints li[aria-selected=true] { background: var(--moon); }
+.hints li[aria-selected=true] { box-shadow: inset 4px 0 0 var(--eye); }
+.hints .h-label { overflow-wrap: anywhere; line-height: 1.35; }
+.hints .h-kind { flex: none; font-size: .82rem; color: var(--muted); white-space: nowrap; }
+.hints mark { background: #ffe2a8; color: inherit; border-radius: 2px; padding: 0 1px; }
+@media (max-width: 480px) { .hints li { flex-direction: column; gap: 0; } }
+
+</style>
+</head>
+<body>
+<template id="page-index"><main id="main">
+
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <h1>What is known about India's nightjars, gathered in one place</h1>
+        <p class="lede">Papers, notes, theses and books on the family Caprimulgidae from Gujarat and across the Indian subcontinent, indexed so you can search them by subject, place and year.</p>
+        <form class="hero-search" action="#database" method="get" role="search">
+          <label class="hp" for="hq">Search the records</label>
+          <input id="hq" name="q" type="search" placeholder="Try: breeding, road kill, Gujarat, Savanna Nightjar">
+          <button class="btn amber" type="submit">Search the data</button>
+        </form>
+        <p class="hero-facts" id="facts">&nbsp;</p>
+      </div>
+
+      <!-- A torch beam finding a nightjar's eyeshine on a dark track: how these birds are surveyed. -->
+      <svg class="scene" viewBox="0 0 440 320" role="img" aria-label="A torch beam crossing dark ground and catching the amber eyeshine of a nightjar">
+        <defs>
+          <linearGradient id="beam" x1="0" x2="1">
+            <stop offset="0" stop-color="#fff6dc" stop-opacity=".55"/>
+            <stop offset="1" stop-color="#fff6dc" stop-opacity="0"/>
+          </linearGradient>
+          <radialGradient id="halo">
+            <stop offset="0" stop-color="#f2a93b" stop-opacity=".75"/>
+            <stop offset="1" stop-color="#f2a93b" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <g fill="#fff">
+          <circle cx="60" cy="40" r="1.3" opacity=".8"/><circle cx="150" cy="22" r="1" opacity=".6"/>
+          <circle cx="232" cy="58" r="1.4" opacity=".7"/><circle cx="300" cy="28" r="1" opacity=".5"/>
+          <circle cx="384" cy="70" r="1.2" opacity=".8"/><circle cx="110" cy="96" r="1" opacity=".5"/>
+          <circle cx="410" cy="20" r="1" opacity=".6"/><circle cx="26" cy="120" r="1.1" opacity=".5"/>
+        </g>
+        <path d="M352 44a26 26 0 1 0 18 44 21 21 0 1 1-18-44z" fill="#e6e9f5" opacity=".9"/>
+        <path d="M0 232c70-18 130-10 200-16s160-22 240-8v112H0z" fill="#0d1122"/>
+        <path d="M0 262c90-14 190-6 280-14s110-4 160-2v74H0z" fill="#080b17"/>
+        <polygon class="beam" points="40,250 400,196 400,262" fill="url(#beam)"/>
+        <!-- the bird: a low, flat shape on the ground -->
+        <path d="M286 236c10-13 34-17 52-10 8 3 13 7 20 6-5 6-14 8-24 8h-52c-4 0-2-2 4-4z" fill="#05070f"/>
+        <circle class="halo" cx="339" cy="229" r="24" fill="url(#halo)"/>
+        <circle class="shine" cx="339" cy="229" r="4.2" fill="#f2a93b"/>
+        <circle class="shine" cx="340.3" cy="227.8" r="1.3" fill="#fff6dc"/>
+      </svg>
+    </div>
+  </section>
+
+  <section class="section on-paper">
+    <div class="wrap split">
+      <div>
+        <h2>Why this portal exists</h2>
+        <p>Nightjars are active at dusk and through the night, they sit still on bare ground, and their plumage makes them look like leaf litter. That is why so little is written about them, and why what is written is scattered across journals, checklists and old natural history notes.</p>
+        <p>We have read through that literature and indexed every record we could find for the Indian subcontinent, with Gujarat as our starting point. Each entry tells you what was studied, where, when and by whom, so you can go straight to the source.</p>
+        <p><a class="btn" href="#account">Request access to the data</a></p>
+      </div>
+      <div>
+        <h3>What the records cover</h3>
+        <ul class="bars" id="bars" aria-label="Number of records by subject"></ul>
+        <p class="small muted" id="bars-note"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section grant" id="grant">
+    <div class="wrap split">
+      <div>
+        <h2>Supported by the Global Nightjar Network and Kshitij Foundation</h2>
+        <p>This work received the <span id="g-name"></span>, a collaborative initiative of the <span id="g-funders"></span>. The award was announced on <span id="g-date"></span>.</p>
+        <p>The microgrant supports data processing, field validation in Gujarat and outreach, so that records of these birds become a shared, research-ready resource for India.</p>
+        <p><a id="g-link" href="#" rel="noopener">Read the announcement on globalnightjar.org</a></p>
+      </div>
+      <blockquote>
+        <span id="g-project"></span>
+        <footer>The funded project this portal is part of</footer>
+      </blockquote>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <h2>How access works</h2>
+      <p class="lede">The index is free for research, conservation and education. We ask who is using it so we can credit sources properly and keep sensitive locations safe.</p>
+      <ol class="steps">
+        <li><h3>Request access</h3><p>Create an account and tell us who you are and what you plan to use the data for.</p></li>
+        <li><h3>We review it</h3><p>A person on our team reads every request and approves or declines it.</p></li>
+        <li><h3>Search and export</h3><p>Once approved, sign in to search, filter, map and download the records.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section on-paper" id="species-list">
+    <div class="wrap">
+      <h2>Nightjars of the Indian subcontinent</h2>
+      <p class="lede">The species this portal follows. All belong to the family Caprimulgidae.</p>
+      <ul class="species" id="species"></ul>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap two-cta">
+      <div class="panel">
+        <h2>Seen or heard a nightjar?</h2>
+        <p>Send us your sighting, call recording notes, photo or a paper we have missed. You do not need an account or approval to send something in.</p>
+        <a class="btn amber" href="#submit">Send an observation</a>
+      </div>
+      <div class="panel">
+        <h2>Awareness material</h2>
+        <p>Posters, leaflets and identification guides for schools, forest staff and birding groups, free to download and share.</p>
+        <a class="btn ghost" href="#awareness">See awareness material</a>
+      </div>
+    </div>
+  </section>
+
+</main></template>
+<template id="page-database"><main id="main">
+  <div class="page-head"><div class="wrap">
+    <h1>Search the nightjar records</h1>
+    <p>Published literature on Caprimulgidae from Gujarat and the Indian subcontinent.</p>
+  </div></div>
+  <section class="section tight"><div class="wrap">
+
+    <div id="gate" class="panel narrow" aria-live="polite"><p class="muted">Checking your access…</p></div>
+
+    <div id="app" class="hidden">
+      <form id="filters" class="panel" role="search" onsubmit="return false">
+        <div class="filters">
+          <div class="field q"><label for="q">Search <span class="hint">Title, author, journal, place or institute</span></label>
+            <input id="q" type="search" placeholder="e.g. breeding, Bhavnagar, road kill"></div>
+          <div class="field"><label for="f-subject">Subject</label><select id="f-subject"><option value="">All subjects</option></select></div>
+          <div class="field"><label for="f-type">Type</label><select id="f-type"><option value="">All types</option></select></div>
+          <div class="field"><label for="f-country">Country</label><select id="f-country"><option value="">All countries</option></select></div>
+        </div>
+        <div class="filters-2">
+          <div><label for="y1">From year</label><input class="yr" id="y1" type="number" inputmode="numeric" placeholder="1847"></div>
+          <div><label for="y2">To year</label><input class="yr" id="y2" type="number" inputmode="numeric" placeholder="2023"></div>
+          <label class="check"><input id="f-guj" type="checkbox"> Gujarat only</label>
+          <label class="check"><input id="f-map" type="checkbox"> Has map coordinates</label>
+          <button class="btn ghost sm" type="button" id="clear">Clear filters</button>
+        </div>
+      </form>
+
+      <div class="result-bar">
+        <strong id="count" aria-live="polite"></strong>
+        <div class="actions">
+          <label class="hp" for="sort">Sort by</label>
+          <select id="sort">
+            <option value="new">Newest first</option>
+            <option value="old">Oldest first</option>
+            <option value="title">Title A to Z</option>
+          </select>
+          <button class="btn ghost sm" type="button" id="toggle-map" aria-expanded="false">Show map</button>
+          <button class="btn sm" type="button" id="export">Download results (CSV)</button>
+        </div>
+      </div>
+
+      <div id="map" class="hidden" aria-label="Map of study locations"></div>
+      <ul class="records" id="list"></ul>
+      <div class="pager" id="pager"></div>
+      <p class="small muted">Please cite the original authors when you use a record. If you spot an error, tell us and we will fix it.</p>
+    </div>
+
+  </div></section>
+</main></template>
+<template id="page-account"><main id="main">
+  <div class="page-head"><div class="wrap">
+    <h1>Your account</h1>
+    <p>Request access to the records, or sign in if you already have an account.</p>
+  </div></div>
+  <section class="section tight"><div class="wrap">
+    <div id="status" class="narrow"></div>
+
+    <div id="auth" class="hidden narrow">
+      <div class="tabs" role="tablist">
+        <button role="tab" id="tab-up" aria-selected="true" aria-controls="p-up">Request access</button>
+        <button role="tab" id="tab-in" aria-selected="false" aria-controls="p-in">Sign in</button>
+      </div>
+
+      <form id="p-up" class="panel" role="tabpanel" aria-labelledby="tab-up">
+        <p>Tell us a little about yourself. We read every request and reply by email.</p>
+        <div class="field"><label for="u-name">Full name</label><input id="u-name" name="full_name" required autocomplete="name"></div>
+        <div class="field"><label for="u-email">Email</label><input id="u-email" name="email" type="email" required autocomplete="email"></div>
+        <div class="field"><label for="u-pass">Choose a password <span class="hint">At least 8 characters</span></label>
+          <input id="u-pass" name="password" type="password" minlength="8" required autocomplete="new-password"></div>
+        <div class="field"><label for="u-aff">Organisation or institute <span class="hint">University, NGO, forest department, birding group, or "independent"</span></label>
+          <input id="u-aff" name="affiliation" required></div>
+        <div class="field"><label for="u-purpose">What will you use the data for?</label>
+          <textarea id="u-purpose" name="purpose" required minlength="20" placeholder="For example: literature review for an MSc dissertation on nightjar breeding in Saurashtra"></textarea></div>
+        <label class="check field"><input type="checkbox" required> I will cite the original authors and this portal when I use the data.</label>
+        <button class="btn" type="submit">Send access request</button>
+      </form>
+
+      <form id="p-in" class="panel hidden" role="tabpanel" aria-labelledby="tab-in">
+        <div class="field"><label for="i-email">Email</label><input id="i-email" name="email" type="email" required autocomplete="email"></div>
+        <div class="field"><label for="i-pass">Password</label><input id="i-pass" name="password" type="password" required autocomplete="current-password"></div>
+        <button class="btn" type="submit">Sign in</button>
+        <p class="small" style="margin:16px 0 0"><a href="#" id="forgot">Forgot your password?</a></p>
+      </form>
+    </div>
+  </div></section>
+</main></template>
+<template id="page-submit"><main id="main">
+  <div class="page-head"><div class="wrap">
+    <h1>Send us your nightjar observation</h1>
+    <p>Sightings, calls heard, photos, road kills, nests, or a paper we have missed. No account needed.</p>
+  </div></div>
+  <section class="section tight"><div class="wrap">
+    <div id="done" class="notice ok narrow hidden" tabindex="-1">
+      <h2>Observation sent</h2>
+      <p>Thank you. We will check it and may write to you if we have a question.</p>
+      <p><button class="btn sm" id="another" type="button">Send another observation</button></p>
+    </div>
+
+    <form id="obs" class="panel narrow">
+      <div class="row2">
+        <div class="field"><label for="s-name">Your name</label><input id="s-name" name="name" required autocomplete="name"></div>
+        <div class="field"><label for="s-email">Email <span class="hint">Only used if we need to ask you something</span></label><input id="s-email" name="email" type="email" required autocomplete="email"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="s-kind">What are you sending?</label>          <select id="s-kind" name="kind">
+            <option>Sighting</option><option>Call heard</option><option>Nest or chick</option>
+            <option>Dead or injured bird</option><option>Photo only</option><option>Paper, report or book</option><option>Other</option>
+          </select></div>
+        <div class="field"><label for="s-species">Species</label>
+          <select id="s-species" name="species"><option value="">Not sure</option></select></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label for="s-date">Date seen</label><input id="s-date" name="obs_date" type="date"></div>
+        <div class="field"><label for="s-count">Number of birds</label><input id="s-count" name="bird_count" type="number" min="0" max="999" inputmode="numeric"></div>
+      </div>
+      <div class="field"><label for="s-place">Place <span class="hint">Village or site, district and state</span></label>
+        <input id="s-place" name="place" required placeholder="e.g. Velavadar, Bhavnagar district, Gujarat"></div>
+      <div class="row3">
+        <div class="field"><label for="s-lat">Latitude <span class="hint">Optional</span></label><input id="s-lat" name="latitude" type="number" step="any" min="-90" max="90" placeholder="22.0375"></div>
+        <div class="field"><label for="s-lng">Longitude <span class="hint">Optional</span></label><input id="s-lng" name="longitude" type="number" step="any" min="-180" max="180" placeholder="72.0256"></div>
+        <div class="field"><label>&nbsp;<span class="hint">If you are at the spot now</span></label><button class="btn ghost" type="button" id="locate" style="width:100%">Use my location</button></div>
+      </div>
+      <div class="field"><label for="s-notes">Notes <span class="hint">Habitat, time of night, behaviour, call, or the full reference of a paper</span></label>
+        <textarea id="s-notes" name="notes"></textarea></div>
+      <div class="field"><label for="s-photo">Photo <span class="hint">Optional. JPG, PNG or WebP, up to 10 MB</span></label>
+        <input id="s-photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp"></div>
+      <div class="notice small"><p>Please do not use flash or go close to a nest for a photo. Nest locations are kept private and never shown on the public site.</p></div>
+      <label class="check field"><input type="checkbox" name="consent" required> This is my own observation or photo, and the portal team may use it for research and awareness with credit to me.</label>
+      <div class="hp" aria-hidden="true"><label for="s-web">Leave this empty</label><input id="s-web" name="website" tabindex="-1" autocomplete="off"></div>
+      <button class="btn amber" type="submit">Send observation</button>
+    </form>
+  </div></section>
+</main></template>
+<template id="page-awareness"><main id="main">
+  <div class="page-head"><div class="wrap">
+    <h1>Awareness material</h1>
+    <p>Posters, leaflets and guides about nightjars. Free to download, print and share.</p>
+  </div></div>
+  <section class="section tight"><div class="wrap">
+    <ul class="materials" id="materials"></ul>
+    <div class="empty hidden" id="none">
+      <h3>The first posters and leaflets are being prepared</h3>
+      <p>They will appear here as soon as they are ready. If you would like material in Gujarati, Hindi or English for a school or a field team, write to us and tell us what you need.</p>
+      <p><a class="btn ghost sm" id="mail" href="#">Email the team</a></p>
+    </div>
+  </div></section>
+</main></template>
+<template id="page-admin"><main id="main">
+  <div class="page-head"><div class="wrap">
+    <h1>Admin</h1>
+    <p>Approve access requests, review what people send in, and publish awareness material.</p>
+  </div></div>
+  <section class="section tight"><div class="wrap">
+    <div id="denied" class="notice bad narrow hidden"><p>This page is for portal admins. <a href="#account">Sign in</a> with an admin account to continue.</p></div>
+
+    <div id="adm" class="hidden">
+      <div class="tabs" role="tablist">
+        <button role="tab" data-tab="requests" aria-selected="true">Access requests <span id="n-req"></span></button>
+        <button role="tab" data-tab="subs" aria-selected="false">Observations sent in <span id="n-sub"></span></button>
+        <button role="tab" data-tab="mats" aria-selected="false">Awareness material</button>
+      </div>
+
+      <div id="t-requests"><ul class="cards" id="requests"></ul></div>
+
+      <div id="t-subs" class="hidden">
+        <p><button class="btn ghost sm" id="export-subs" type="button">Download all observations (CSV)</button></p>
+        <ul class="cards" id="subs"></ul>
+      </div>
+
+      <div id="t-mats" class="hidden">
+        <form id="mat-form" class="panel narrow" style="margin-bottom:28px">
+          <h2>Publish new material</h2>
+          <div class="field"><label for="m-title">Title</label><input id="m-title" name="title" required></div>
+          <div class="field"><label for="m-desc">Short description</label><textarea id="m-desc" name="description" style="min-height:70px"></textarea></div>
+          <div class="row2">
+            <div class="field"><label for="m-kind">Kind</label><select id="m-kind" name="kind"><option>Poster</option><option>Leaflet</option><option>Identification guide</option><option>Presentation</option><option>Video</option><option>Report</option></select></div>
+            <div class="field"><label for="m-lang">Language</label><select id="m-lang" name="language"><option>English</option><option>Gujarati</option><option>Hindi</option></select></div>
+          </div>
+          <div class="field"><label for="m-file">File <span class="hint">PDF or image, up to 50 MB</span></label><input id="m-file" name="file" type="file" accept="application/pdf,image/*"></div>
+          <div class="field"><label for="m-url">Or a link <span class="hint">For videos or files hosted elsewhere</span></label><input id="m-url" name="url" type="url" placeholder="https://"></div>
+          <button class="btn" type="submit">Publish material</button>
+        </form>
+        <ul class="cards" id="mats"></ul>
+      </div>
+    </div>
+  </div></section>
+</main></template>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+// Storage that falls back to memory when the browser blocks localStorage (some preview panes do).
+window.STORE = (function () {
+  const mem = {};
+  return {
+    get(k) { try { const v = localStorage.getItem(k); if (v !== null) return v; } catch (e) {} return k in mem ? mem[k] : null; },
+    set(k, v) { mem[k] = v; try { localStorage.setItem(k, v); } catch (e) {} }
+  };
+})();
+</script>
+<script>// Portal settings. This is the only file you need to edit to go live.
+window.PORTAL = {
+  // Paste these two values from Supabase > Project Settings > API.
+  // While they are empty the portal runs in demo mode (data stays in your own browser).
+  SUPABASE_URL: "",
+  SUPABASE_ANON_KEY: "",
+
+  SITE_NAME: "Nightjar India Portal",
+  CONTACT_EMAIL: "contactus@reasonify.in",
+
+  // Shown on the home page. Check every line against your award letter before publishing.
+  GRANT: {
+    name: "Manish Mehta Microgrant for Nocturnal Avian Ecology Research and Awareness",
+    funders: "Global Nightjar Network and Kshitij Foundation",
+    project: "Development of a Citizen Science-Based National Database and Research Network for Nightjars (Caprimulgidae) with a Gujarat Case Study",
+    announced: "15 September 2026",
+    link: "https://www.globalnightjar.org/post/gnn-awards-its-first-small-grant"
+  }
+};
+</script>
+<script>// All 209 records, embedded in this file.
+window.DEMO_STATS = {"total": 209, "countries": 16, "year_min": 1847, "year_max": 2023, "mapped": 33, "gujarat": 16, "by_subject": {"Observation": 180, "Breeding biology": 9, "Mortality": 8, "Habitat use": 3, "Food habits": 3, "Anatomy and physiology": 2, "Phylogeny": 1, "Taxonomy": 1, "Conservation status": 1, "Unclassified": 1}};
+window.DEMO_RECORDS = [{"id":1,"type":"Research article","title":"Observations on Habitat Use and Breeding Biology of Indian Nightjar: Caprimulgus asiaticus (Lathum, 1790): Caprimulgidae","pub_date":"2020-05-05","year":2020,"authors":"G.T. Paliwal; S.V. Bhandarkar","journal":"International Refereed Journal of Engineering and Science (IRJES)","volume_pages":"Volume 9 2319-183X","subject":"Habitat use","institute":"1Department of Zoology,S.S. Jaiswal College, Arjuni/Morgaon, Dist. Gondia M.S., India 441701","country":"India","place":"Arjuni town Gondia district","latitude":20.8179,"longitude":80.0395,"is_gujarat":false},{"id":2,"type":"Research article","title":"Habitat for camouflage is priority in preference besides harsh physical conditions in three species of Nightjar (Aves: Caprimulgiformes)","pub_date":"2017-03-10","year":2017,"authors":"SP Chavan; Sonali Jondhale; Deepak Walke; Pavan Jadhav","journal":"International Journal of Fauna and Biological Studies","volume_pages":"ISSN 2347-2677","subject":"Habitat use","institute":"Department of Zoology,School of Life Sciences, Swami Ramanand Teerth Marathwada University, Nanded,Maharashtra, India","country":"India","place":"S. R. M. Univ. Nanded Campus","latitude":19.098056,"longitude":77.288333,"is_gujarat":false},{"id":3,"type":"Research article","title":"Nesting patterns of some terrestrial birds in Danta Forest Range, northern Gujarat, India","pub_date":"2009-03-26","year":2009,"authors":"Nikunj Gajera; S.M. Dave; N.A. Dharaiya","journal":"Journal of Threatened Taxa","volume_pages":"1(3): 170-173","subject":"Breeding biology","institute":"Department of Life Sciences, Hemchandracharya North Gujarat University, Patan, Gujarat 384265, India","country":"India","place":"Danta Forest Range, northern Gujarat,","latitude":24.023333,"longitude":72.2625,"is_gujarat":true},{"id":4,"type":"Research article","title":"Nestling of common Indian Nightjar (Camprimulgus asiaticus Latham)","pub_date":null,"year":1967,"authors":"BS Lamba","journal":"J. Bombay nat. Hist. Soc","volume_pages":"64 (1): 110 111","subject":"Breeding biology","institute":null,"country":"India","place":"Shindewadi, Poona District.","latitude":18.378841,"longitude":73.855991,"is_gujarat":false},{"id":6,"type":"Research note","title":"Notes on a collection of Indian birds, mostly from Delhi","pub_date":null,"year":1967,"authors":"JULJAN P Donahue","journal":"J. Bombay Nat. Hist. Soc","volume_pages":"64 410-429","subject":"Observation","institute":null,"country":"India","place":"Delhi","latitude":28.623194,"longitude":77.104149,"is_gujarat":false},{"id":7,"type":"Research note","title":"UNUSUAL CONGREGATION OF SAVANNA NIGHTJAR CAPRIMULGUS AFFINIS IN A WHEAT FIELD","pub_date":null,"year":2014,"authors":"Girish Jathar; Sachin Anpat; Balu Bhangare; Dharmaraj Patil","journal":"J. Bombay Nat. Hist. Soc","volume_pages":"10.17087/v111i2/72239","subject":"Observation","institute":null,"country":"India","place":"Partala is situated in Narayanganj tehsil of Mandla district in Madhya Pradesh","latitude":22.817933,"longitude":80.309397,"is_gujarat":false},{"id":10,"type":"Research article","title":"The size of the olfactory bulb in 108 species of birds","pub_date":"1968-01-01","year":1968,"authors":"B. G. BANG; Stanley Cobb","journal":"The Auk, 85:","volume_pages":"85: 55-61.","subject":"Anatomy and physiology","institute":"Department of PathobiologyJohns Hopkins University School of Hygiene and Public Health, Baltimore, Maryland, and the Department of Neurology and Psychiatry, Harvard Medical School and Massachusetts General Hospital, Boston, Massachusetts.","country":null,"place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":13,"type":"Research article","title":"Feeding by Common Nightjar Caprimulgus asiaticus and Indian Roller Coracias benghalensis in the light of mercury vapour lamps","pub_date":"1990-06-25","year":1992,"authors":"AMK Bharos","journal":"Journal of the Bombay Natural History Society","volume_pages":"89 124 1992","subject":"Food habits","institute":"Journal of the Bombay Natural History Society","country":"India","place":"Bhilai,","latitude":21.200103,"longitude":81.347568,"is_gujarat":false},{"id":14,"type":"Research article","title":"A new race of Caprimulgus asiaticus from north Siam","pub_date":null,"year":1933,"authors":"Rodolphe Meyer de Schauensee","journal":"Proceedings of the Academy of Natural Sciences of Philadelphia","volume_pages":"85 373-373","subject":"Observation","institute":"Proceedings of the Academy of Natural Sciences of Philadelphia","country":"Thailand","place":"north siam","latitude":13.53276,"longitude":100.741962,"is_gujarat":false},{"id":15,"type":"Research article","title":"Surveillance of avian mortality on the road passing through Pohra – Malkhed reserve forest district Amravati, Maharashtra","pub_date":"2018-02-03","year":2018,"authors":"Amol S Rawankar; Gajanan A Wagh","journal":"International Journal of Zoology Studies","volume_pages":"vol 3 Page No. 135-139","subject":"Mortality","institute":"1 Jagadamba Mahavidyalaya Achalpur, Amravati, Maharashtra, India 2 Shri Shivaji Science College, Amravati, Maharashtra, India","country":"India","place":"Pohra – Malkhed forest Amravati District","latitude":20.963611,"longitude":77.878889,"is_gujarat":false},{"id":16,"type":"Research article","title":"Opportunistic usage of Abandoned Nests by Secondary Cavity Nesting Birds","pub_date":"2022-01-10","year":2022,"authors":"Mahesh Veera; Suseela L.","journal":"Environment and Ecology 40 (1)","volume_pages":"40 (1) : 168—173","subject":"Breeding biology","institute":"Department of Biosciences and Biotechnology, Krishna University, Machilipatnam, Krishna District, Andhra Pradesh, India","country":"India","place":"Machilipatnam, Krishna District, Andhra Pradesh","latitude":16.183314,"longitude":81.131233,"is_gujarat":false},{"id":17,"type":"Research article","title":"Road kill of animals by highway traffic in the tropical forests of Mudumalai Tiger Reserve, southern India","pub_date":"2010-03-26","year":2010,"authors":"N. Baskaran; D. Boominathan","journal":"Journal of Threatened Taxa","volume_pages":"2(3): 753-759753","subject":"Mortality","institute":null,"country":"India","place":"Mudumalai Tiger Reserve Tamil Nadu","latitude":11.533333,"longitude":76.333333,"is_gujarat":false},{"id":18,"type":"Short note","title":"Avifauna of Hosur forest division, Eastern Ghats, southern India","pub_date":"2007-10-24","year":2009,"authors":"Kannan Govindaraj","journal":"indian birds","volume_pages":"4 (4): 138–139 (2008).","subject":"Observation","institute":"Indian Institute of Science, Bangalore 560012, Karnataka, India.","country":"India","place":"Hosur forest division, Eastern Ghats, southern India","latitude":12.733652,"longitude":77.825516,"is_gujarat":false},{"id":19,"type":"Research article","title":"Nocturnal birds in the Eastern Ghats of Tamil Nadu","pub_date":"2015-08-20","year":2016,"authors":"J. Patrick David; B. Vinoth","journal":"indian birds","volume_pages":"11 (2): 39–41.","subject":"Observation","institute":null,"country":"India","place":"Estern ghats tamilnadu","latitude":11.161177,"longitude":78.408161,"is_gujarat":false},{"id":20,"type":"Research article","title":"Avifaunal diversity of National Zoological Park, Delhi","pub_date":"2021-05-14","year":2021,"authors":"P. KHAN; M. KUMAR; R. K. PANDEY","journal":"e-planet","volume_pages":"19 (1): 79-87","subject":"Observation","institute":"1*North Orissa University, Takatpur, Mayurbhanj, Odisha, India 2 National Zoological Park, Mathura road, Pragati Maidan, New Delhi- 110003, India","country":"India","place":"National Zoological Park (NZP)","latitude":28.604436,"longitude":77.246198,"is_gujarat":false},{"id":21,"type":"Research article","title":"PRELIMINARY SURVEY OF AVIFAUNA FROM AGROFOREST ECOSYSTEM OF DEV TALAV, NAGBHID (MAHARASHTRA), INDIA","pub_date":null,"year":2019,"authors":"Deshmukh G.D.; M. KUMAR","journal":"Journal of Global Biosciences","volume_pages":"Vol. 8(6) pp. 6290-6300","subject":"Observation","institute":null,"country":"India","place":"Dev Talav (Pond) Ghodazari Sanctuary by Government of Maharashtra","latitude":20.550631,"longitude":79.650631,"is_gujarat":false},{"id":22,"type":"Research article","title":"Notes on a Collection of Indian Birds, mostly from Delhi","pub_date":null,"year":1962,"authors":"JULJAN P. DONAHU","journal":"JOURNAL, BO.'vtBAY NATURAL HIST. SOCIETY,","volume_pages":"vol 64(3) 416","subject":"Food habits","institute":"Department of Entomology, Michigan State University, East Lansing, Michigan, U.S.A..","country":"India","place":"Delhi","latitude":28.709951,"longitude":77.165948,"is_gujarat":false},{"id":23,"type":"Research article","title":"Glimpse of avian diversity near Mithiviradi Village, Bhavnagar District, Gujarat, India","pub_date":"2020-06-19","year":2020,"authors":"Viral M. Vaghela; Pravinsang P. Dodia","journal":"International Multidisciplinary Research Journal 2020,","volume_pages":"10: 40-43","subject":"Observation","institute":"1Zoology Departement, Sir P. P. Institute of Science, MK Bhavnagar University, Bhavnagar – 364001, Gujarat, India","country":"India","place":"Mithiviradi village","latitude":21.501667,"longitude":72.230278,"is_gujarat":true},{"id":24,"type":"Research article","title":"Birds of Kuno Wildlife Sanctuary, Central India","pub_date":"2011-12-12","year":2011,"authors":"Tharmalingam Ramesh; Natarajan Sridharan; Riddhika Kalle","journal":"ZOO’s PRINT","volume_pages":"VOL (26) 25-29","subject":"Observation","institute":"Wildlife Institute of India, Chandrabani, P.O. Box 18, Dehra Dun 248 001, Uttarakhand,","country":"India","place":"Kuno Wildlife Sanctuary,","latitude":25.5,"longitude":77.116667,"is_gujarat":false},{"id":25,"type":"Research article","title":"A STUDY OF AVIAN DIVERSITY IN DURGAPUR GOVERNMENT COLLEGE CAMPUS, WEST BENGAL, INDIA","pub_date":"2022-03-15","year":2022,"authors":"Sagar Adhurya; Debayan Gayen; Moitreyee Chakrabarty; Utpal Singha Roy","journal":"The holistic approach to environment,","volume_pages":"Vol. 13 No. 2 48-62","subject":"Observation","institute":"Durgapur Wildlife Information and Nature Guide Society, Durgapur, Paschim Bardhaman, West Bengal, India","country":"India","place":"Durgapur Government College","latitude":23.5427,"longitude":87.3269,"is_gujarat":false},{"id":26,"type":"Research article","title":"A survey on avifauna diversity in some selected localities in and around Madurai city","pub_date":"2022-09-07","year":2022,"authors":"Thangavel Rajagopal; Karuppaiya Sonaimuthu; Subbiah Selvarani","journal":"Eco. Env. & Cons","volume_pages":"2022; pp. (S207-S216)","subject":"Observation","institute":"Department of Zoology, Thiagarajar College (Autonomous), Madurai 625 009, Tamil Nadu, India","country":"India","place":"Madurai City","latitude":9.93,"longitude":78.12,"is_gujarat":false},{"id":27,"type":"Research article","title":"Sighting of an albino nightjar at Udawalawe National Park, Sri Lanka","pub_date":"2012-11-11","year":2012,"authors":"B. Vijitha; P. Perera; Nilmini Jayasena","journal":"ZOO’S PRINT","volume_pages":"VOL (27) 14-15","subject":"Observation","institute":null,"country":"Sri Lanka","place":"Udawalawe National Park","latitude":6.6825,"longitude":80.948889,"is_gujarat":false},{"id":28,"type":"Book","title":"The Book of Indian Birds. 12th revised and enlarged centenary edition. Bombay Natural History Society, Bombay, India.","pub_date":null,"year":1996,"authors":"SALIM ALI","journal":"THE BOMBAY NATURAL HISTORY SOCIETY, 6, Apollo Street, Fort, BOMBAY 1941","volume_pages":null,"subject":"Observation","institute":null,"country":null,"place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":29,"type":"Research article","title":"Avian Diversity of Kidoor, a village in the lateritic midlands of Kasaragod district, North Kerala","pub_date":null,"year":2018,"authors":"Maxim Rodrigues; Prashantha Krishna; Raju Kidoor; Rayan Pradeep","journal":"Kollangana house, Kallakatta Post, Kasaragod","volume_pages":null,"subject":"Observation","institute":null,"country":"India","place":"Kidoor","latitude":12.634014,"longitude":74.98576,"is_gujarat":false},{"id":30,"type":"Research article","title":"ornithological collections from the Indian Subcontinent","pub_date":"2013-01-29","year":2013,"authors":"Justin J. F. J. Jansen","journal":"indian birds","volume_pages":"vol 8 18-19","subject":"Breeding biology","institute":null,"country":"Netherlands","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":31,"type":"Book review","title":"Illustrated Checklist of the Birds of the World","pub_date":null,"year":2014,"authors":"Josep del Hoyo; Nigel Collar; David Christie; Andrew Elliott","journal":"THE CANADIAN FIELD-NATURALIST","volume_pages":"vol 128","subject":"Observation","institute":null,"country":"Spain","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":32,"type":"News note","title":"Mortality rate in common indian nightjar in road accident","pub_date":null,"year":1992,"authors":"Rajiv saxena","journal":null,"volume_pages":"vol 32 no 9/10","subject":"Mortality","institute":null,"country":"India","place":"Thatipur Gwalior, Madhya Pradesh","latitude":26.21,"longitude":78.208774,"is_gujarat":false},{"id":33,"type":"Research article","title":"Studies on Avian Diversity, Abundance and Their Status at Raj Bhavan, Nagpur, Maharashtra","pub_date":"2019-04-04","year":2019,"authors":"Ajay Dorlikar; Pravin Charde","journal":"International Journal of Advanced Scientific Research and Managemen","volume_pages":null,"subject":"Observation","institute":"P.G. Department of Zoology and Research Academy, Sevadal Mahila Mahavidyalaya, Nagpur, Maharashtra, India 2 Principal, Sevadal Sevadal Mahila Mahavidyalaya, Nagpur, Maharashtra, India","country":"India","place":"Raj Bhavan, Nagpur","latitude":20.166667,"longitude":79.066667,"is_gujarat":false},{"id":34,"type":"Research article","title":"SEASONAL POPULATION FLUCTUATIONS IN SOME NON-PASSERIFORMES AT MARALA HEAD, PAKISTAN","pub_date":null,"year":null,"authors":"ZAHID BHATTI; ASAD GHUFRAN2; FAKHRA NAZIR","journal":"Journal of Bioresource Management","volume_pages":"Volume 7 Issue 1 Article 6","subject":"Habitat use","institute":"Center for Bioresource Res0earch (CBR), Islamabad, Pakistan International Islamic University, Islamabad, Pakistan","country":"Pakistan","place":"Bajwat area, Punjab, Pakistan","latitude":32.757224,"longitude":73.51329,"is_gujarat":false},{"id":35,"type":"Research article","title":"Determination of Faunal Diversity in Jamkani Reserve Forest, Sundargarh, Odisha, and the Impact of Mining on it","pub_date":null,"year":null,"authors":"S. Gouda; S. Begum","journal":"Biodiversity Conservation, Research and Management","volume_pages":null,"subject":"Observation","institute":null,"country":null,"place":"Sundargarh district forest belt of Odisha and Chhattisgarh","latitude":22.204444,"longitude":84.035,"is_gujarat":false},{"id":36,"type":"Research article","title":"STUDY ON AVIFAUNAL DIVERSITY AND SPECIES RICHNESS IN FOOT HILLS OF NILGIRIS, TAMILNADU, INDIA","pub_date":null,"year":2015,"authors":"S. JOHN PETER; I. JAISANKAR; P. DURAI RASU","journal":"Indian Forester, , 2015","volume_pages":"141 (10) : 1067-1074","subject":"Observation","institute":"Forest College and Research Institute Mettupalayam, Tamilnadu, India","country":"India","place":"Jakkanari beat of Coimbatore forest division, Tamil Nadu","latitude":11.383333,"longitude":76.033333,"is_gujarat":false},{"id":37,"type":"Research article","title":"Birds of Alagarkovil Range, Dindigul District, Tamil Nadu","pub_date":null,"year":2016,"authors":"Narayanan, T. B","journal":"indian birds","volume_pages":"12 (4&5): 119–127.","subject":"Observation","institute":null,"country":"India","place":"Alagarkovil Range, Dindigul District","latitude":10.1,"longitude":78.316667,"is_gujarat":false},{"id":38,"type":"Research article","title":"A Comparative Study of Avian Diversity at Three Selected Sites of Porbandar, Gujarat, India","pub_date":"2022-10-29","year":2022,"authors":"Malay A Vyas; Jatin V Raval","journal":"Asian Journal of Biological and Life Sciences","volume_pages":"Vol 11 Issue 3622-677","subject":"Observation","institute":"Zoology Laboratory, Department of Life Sciences, Bhakta Kavi Narsinh Mehta University, Junagadh, Gujarat, INDIA.","country":"India","place":"Chhaya wetland","latitude":21.617222,"longitude":69.648611,"is_gujarat":true},{"id":39,"type":"Research article","title":"Birds of Surat-Dangs: a consolidated checklist of 75 years (1944–2020) with special emphasis on noteworthy bird records and bird hotspots from northern Western Ghats of Gujarat, India","pub_date":"2021-06-26","year":2021,"authors":"nikunj jambu; kaushal g patel","journal":"Journal of Threatened Taxa","volume_pages":"Vol. 13 | No. 7 | Pages: 18752–18780","subject":"Observation","institute":"Division of Avian Biology and Wildlife Biology, Department of Zoology, The Maharaja Sayajirao University of Baroda, Pratapgunj, Vadodara, Gujarat 390002, India","country":"India","place":"Dang district","latitude":20.55,"longitude":73.45,"is_gujarat":true},{"id":40,"type":"Research article","title":"Report of the early winter migrants and resident birds in an inland wetland near Tundi Camp, Bajana, Gujarat","pub_date":"2018-04-26","year":2018,"authors":"Abhishek Chatterjee; Sudeshna Ghoshal; Soumyajit Chowdhury; Pinakiranjan Chakrabart","journal":"Journal of Threatened Taxa","volume_pages":"Vol. 10 | No. 5 | Pages: 11652–11658","subject":"Observation","institute":"Department of Zoology, Vijaygarh Jyotish Ray College, Bejoygarh, Jadavpur, Kolkata, West Bengal 700032, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":true},{"id":41,"type":"Thesis","title":"“Ecology and Conservation of Avifauna of Some Forested Areas in Gujarat, India”","pub_date":null,"year":null,"authors":null,"journal":null,"volume_pages":null,"subject":"Observation","institute":null,"country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":true},{"id":42,"type":"Research article","title":"A study of Avifauna from Girnar Wildlife Sanctuary, Junagadh, Gujarat, India","pub_date":"2022-12-31","year":2022,"authors":"Usha J. Zala; Jatin V. Raval; Romanch S. Nimavat; Namrata K. Hun","journal":"Journal of Animal Diversity","volume_pages":"Volume 4 Issue 4 (2022)","subject":"Observation","institute":"Zoology Lab, Department of Life Sciences, Bhakta Kavi Narsinh Mehta University, Junagadh, Gujarat, India","country":"India","place":"Girnar hills","latitude":20.416667,"longitude":70.5,"is_gujarat":true},{"id":43,"type":"Research article","title":"Observation of road kills on Kambam-Kumily Road (NH 220)","pub_date":"2011-03-03","year":2011,"authors":"K. Muthamizh Selvan","journal":"ZOO's PRINT","volume_pages":"Volume XXVI Number 3","subject":"Mortality","institute":"Research Fellow, Dhole Ecology and conservation Project, Wildlife Institute of India, Dehradun 248001","country":"India","place":"border of Kerala (Kumily) and Tamil Nadu","latitude":9.656667,"longitude":77.184444,"is_gujarat":false},{"id":44,"type":"Research article","title":"Vertebrate road kills on State Highway 26 in Khandwa Forest Division, central India","pub_date":"2023-04-26","year":2023,"authors":"kamran husain; prachi mehta","journal":"Journal of Threatened Taxa","volume_pages":"15(4): 23016–23028","subject":"Mortality","institute":"Wildlife Research and Conservaton Society, 1A Shreeyog, 127/3, Sus Road, Pashan, Pune, Maharashtra 411021, India.","country":"India","place":"h Khandwa Forest Division in Khandwa District","latitude":21.8259,"longitude":76.3678,"is_gujarat":false},{"id":45,"type":"Research article","title":"DNA Barcoding of Some Avian Species Killed Due to Road Vehicle Collision in Vidharbha Region, India","pub_date":"2021-03-29","year":2021,"authors":"Amol S. Rawankar; Gajanan A. Wagh","journal":"Biosc.Biotech.Res.Comm.","volume_pages":"Vol 14 No (1) Pp 346-350","subject":"Phylogeny","institute":"1 Department of Zoology, Jagadamba Mahavidyalaya Achalpur, Amravati, Maharashtra, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":46,"type":"Research article","title":"A molecular analysis of the mysterious Vaurie’s Nightjar Caprimulgus centralasicus yields fresh insight into its taxonomic status","pub_date":"2020-03-25","year":2020,"authors":"Manuel Schweizer; Claudia Etzbauer; Hadoram Shirihai; Till Töpfer3; Guy M. Kirwan","journal":"Journal of Ornithology","volume_pages":null,"subject":"Taxonomy","institute":null,"country":"Switzerland","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":47,"type":"Research article","title":"BREEDING OF THE LITTLE INDIAN NIGHTJAR [CAPRIMULGUS ASIATICUS ASIATICIJS) IN THE CHINGLEPUT DISTRICT.","pub_date":null,"year":1937,"authors":"Barnes, Alice M. 1937","journal":null,"volume_pages":null,"subject":"Observation","institute":null,"country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":48,"type":"Book","title":"FURTHER NOTES ON NEPAL BIRD","pub_date":"1984-09-22","year":1984,"authors":null,"journal":null,"volume_pages":"pg no 521 522","subject":"Observation","institute":null,"country":"Nepal","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":49,"type":"Book","title":"GARDEN AND AVIARY BIRDS OF INDI","pub_date":"1984-09-22","year":1984,"authors":"ROBERT L. FLEMING; MELVIN A. TRAYLOR","journal":null,"volume_pages":"pg no 146 147","subject":"Observation","institute":null,"country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":50,"type":"Book","title":"ILLUSTRATIONS of INDIAN ORNITHOLOGY,","pub_date":null,"year":1847,"authors":"T. C. JERDON","journal":null,"volume_pages":null,"subject":"Observation","institute":null,"country":null,"place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":51,"type":"Research article","title":"INDIAN BIRDS BEING A KEY TO THE COMMON BIRDS OF THE PLAINS OF INDIA","pub_date":null,"year":null,"authors":null,"journal":null,"volume_pages":null,"subject":"Observation","institute":null,"country":null,"place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":52,"type":"Research article","title":"AVANIYA BANDHARA: A POTENTIAL BIODIVERSITY HOTSPOT FOR AVIFAUNA IN BHAVNAGAR, GUJARAT, INDIA","pub_date":null,"year":2023,"authors":"Prakruti A. Khatsuriya; Vishal M. Makwana; Pravinsang P. Dodia","journal":"Munis Entomology & Zoology","volume_pages":"1388/1406","subject":"Observation","institute":"Zoology Departement, Sir P. P. Institute of Science, MK Bhavnagar University, Bhavnagar – 364001, Gujarat, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":true},{"id":53,"type":"Research article","title":"Avifauna in Mahavir Swami Wildlife Sanctuary of Deogarh in Lalitpur District, Uttar Pradesh, India","pub_date":null,"year":null,"authors":"Sonika Kushwaha; Akhilesh Kumar","journal":"Research & Reviews: A Journal of Life Sciences","volume_pages":"Volume 8 Issue 3","subject":"Observation","institute":"Indian Biodiversity Conservation Society, Jhansi, Uttar Pradesh, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":54,"type":"Research article","title":"An updated checklist of birds of Sariska Tiger Reserve, Rajasthan, India","pub_date":"2013-09-26","year":2013,"authors":"Aisha Sultana","journal":"Journal of Threatened Taxa","volume_pages":"5(13): 4791–4804","subject":"Observation","institute":"SultanaAravalli Biodiversity Park, Biodiversity Parks Programme, Centre for Environmental Management of Degraded Ecosystems, University of Delhi, Delhi 110007, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":55,"type":"Research article","title":"Avifaunal diversity of Baisipalli Wildlife Sanctuary, Odisha, India","pub_date":"2013-07-26","year":2013,"authors":"Sunit K. Das; Debi P. Sahoo; Nibedita Dash; Hemanta K. Sahu","journal":"Indian BIRDS","volume_pages":"pg no 90 /93","subject":"Observation","institute":"P.G. Department of Wildlife and Conservation Biology, North Orissa University","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":56,"type":"Research article","title":"AVIFAUNAL DIVERSITY OF PADMAPUR AREA, DIST- CHANDRAPUR MAHARASHTRA, INDIA","pub_date":"2017-01-01","year":2017,"authors":"P. M. Telkhade; S. H. Jambhule2","journal":"INTERNATIONAL JOURNAL OF RESEARCHES IN BIOSCIENCES, AGRICULTURE AND TECHNOLOGY","volume_pages":null,"subject":"Observation","institute":"1Arts, Commerce and Science College Tukum, Chandrapur 2Guru Nanak College Ballarpur, Dist. Chandrapur","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":57,"type":"Research article","title":"Diversity of Birds in Ousteri Wetland, Puducherry, India","pub_date":"2010-11-13","year":2010,"authors":"A. Padmavathy; R. Alexandar","journal":"our nature","volume_pages":null,"subject":"Observation","institute":"Department of Ecology and Environmental Sciences, Pondicherry University, Kalapet- 605014, Puducherry,","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":58,"type":"Research article","title":"Pongal Bird Count","pub_date":"2018-01-13","year":2018,"authors":null,"journal":null,"volume_pages":null,"subject":"Observation","institute":null,"country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":59,"type":"Research article","title":"Studies on Bird Diversity of Wadi Region, Dist. Nagpur, Maharashtra","pub_date":"2015-02-02","year":2015,"authors":"M. M. Bhatkulkar; V. L. Gharpure; A. M. Watkar2","journal":"INTERNATIONAL JOURNAL OF RESEARCHES IN BIOSCIENCES, AGRICULTURE AND TECHNOLOGY","volume_pages":null,"subject":"Observation","institute":"1Department of Zoology, J. N. Arts, Comm. and Science College, Wadi 2Department of Zoology, Bhalerao Science College,Saoner, Dist. Nagpur","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":60,"type":"Research article","title":"Impact Assessment of the Indira Gandhi Canal on the Avifauna of the Thar Desert","pub_date":null,"year":null,"authors":"M. Idris; P. Singh; S. Johari","journal":null,"volume_pages":null,"subject":"Observation","institute":"ICAR Research Complex for Eastern Region, ICAR Parisar, P.O. B.V. College, Patna 800014","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":61,"type":"Research article","title":"Bird diversity of Mundali area (Mahanadi river) under Cuttack Forest Division, Odisha, India","pub_date":"2018-12-10","year":2018,"authors":"N.C. PALEI; B.P. RATH2; A.K. MISHRA3","journal":"e-planet","volume_pages":"16 (2): 165-176","subject":"Observation","institute":"Dept. of Wildlife and Biodiversity Conservation, North Orissa University, Baripada, Odisha, India 2 O/o Principal Chief Conservator of Forests (Wildlife) and Chief Wildlife Warden, Odisha, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":62,"type":"Research article","title":"Avifaunal diversity distribution and status of Dabarusingi reservoir at Mandasa Mandalm, Srikakulam Dt. Andhra Pradesh, India","pub_date":"2019-06-03","year":2019,"authors":"Dr. K Rama Rao; Amaravathi D","journal":"International Journal of Fauna and Biological Studies","volume_pages":"6(4): 01-07 2347-2677","subject":"Observation","institute":"Zoology, Govt. Degree & PG College, Tekkali, Srikakulam Dt. Andhra Pradesh,","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":63,"type":"Research article","title":"Wildlife Diversity on the Kasetsart University Si Racha Campus, Chon Buri Province","pub_date":"2011-10-05","year":2011,"authors":"Prateep Duengkae","journal":"Kasetsart Journals","volume_pages":null,"subject":"Observation","institute":"Forest Biology Department, Faculty of Forestry, Kasetsart University, Bangkok 10900, Thailand.2 Center for Advanced Studies in Tropical Natural Resources. Kasetsart University, Bangkok 10900, Thailand.","country":"Thailand","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":64,"type":"Research article","title":"Avifaunal diversity of Badrama Wildlife Sanctuary, Bamra, Odisha, India","pub_date":"2022-05-14","year":2022,"authors":"N.C. PALEI; B.P. RATH; P.S. MALLIK","journal":"e-planet","volume_pages":null,"subject":"Observation","institute":"Principal Chief Conservator of Forests (Wildlife) and Chief Wildlife Warden, Odisha, India 3 Divisional Forest Officer, Bamra (Wildlife) Division, Bamra, Bhubaneswar, Odisha, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":65,"type":"Research article","title":"PRELIMINARY SURVEY OF AVIFAUNA FROM AGROFOREST ECOSYSTEM OF DEV TALAV, NAGBHID (MAHARASHTRA), INDIA","pub_date":null,"year":null,"authors":"Deshmukh G.D; Rudey, R. J.","journal":"Journal of Global Biosciences","volume_pages":null,"subject":"Observation","institute":"Department of Zoology, RMG College, Nagbhid, Dist-Chandrapur, Maharashtra, India.","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":66,"type":"Research article","title":"Avian diversity and range extension records of eastern ghat, western ghat, and Himalayan species to Kanger Valley National Park and adjoining Machkote forest range, Bastar division, Chhattisgarh, India","pub_date":"2019-04-20","year":2019,"authors":"AMK Bharos; Ameet Mandavia; Faiz Bux; Ravi Naidu; Akhilesh Bharos","journal":"International Journal of Fauna and Biological Studies","volume_pages":"6(3): 33-47","subject":"Observation","institute":"IBCN (BNHS) and AWC (Wetland International), Chhattisgarh, B101, Gayatrinagar, Raipur, Chhattisgarh, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":67,"type":"Research article","title":"Species diversity, relative abundance and habitat use of the birds in the Sundarbans East Wildlife Sanctuary, Bangladesh","pub_date":null,"year":2005,"authors":"M. MONIRUL; H. KHAN","journal":"FORKTAIL 21","volume_pages":"(2005): 79–86","subject":"Observation","institute":null,"country":"Bangladesh","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":68,"type":"Research article","title":"Bird diversity along riverine areas in the Bhagirathi Valley, Uttarakhand, India","pub_date":"2019-04-30","year":2019,"authors":"Ankita Sinha; Hima Hariharan; Bhupendra Singh Adhikari; Ramesh Krishnamurthy","journal":"Biodiversity Data Journal","volume_pages":"7: e31588","subject":"Observation","institute":"Wildlife Institute of India, Dehradun, India § Salim Ali Center for Ornithology and Natural History, Coimbatore, India | Wildlife Institute of India, Dehardun, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":69,"type":"Research article","title":"AVIFAUNA OF TROPICAL FOREST RESEARCH INSTITUTE CAMPUS, JABALPUR, MADHYA PRADESH, INDIA","pub_date":"2010-01-01","year":2010,"authors":"ASHISH D. TIPLE'; NITIN KULKARNI; SANJAY PAUNIKAR; K. C. JOSHI","journal":"Indian J. Trop. Biodiv.","volume_pages":"18(1) : 133-141 (2010)","subject":"Observation","institute":"Forest Entomology Division, Tropical Forest Research Institute, Jabalpur- 482021 (M. P.) India \"Present adress: Department of Zoology, P.S.G.V.P. Mandal's Arts, Commerce and Science College, . Shahada, Nandurbar, Maharastra, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":70,"type":"Research article","title":"AN ANNOTATED CHECKLIST OF AVIFAUNA FROM GUJARAT FORESTRY RESEARCH FOUNDATION, GANDHINAGAR, GUJARAT, INDIA","pub_date":null,"year":2023,"authors":"Krutarth Raval; Maharshi Pandya; K. Sasikumar; Sanjiv Tyagi","journal":"Munis Entomology & Zoology","volume_pages":"18 (1) 429 437","subject":"Observation","institute":"Gujarat Forestry Research Foundation, Forest and Environment Department, Gandhinagar, Gujarat, INDIA. E-mails: ravalkrutarth69@gmail.com, cfbharuch@gmail. com, sanjiv13.t@gmail.com; ORCID ID: 0000-0002-2124-9150 ** Snake Research Institute, Forest and Environment Department, Valsad, Gujarat, INDIA. E-mail: dr.maharshipandya@gmail.com","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":true},{"id":71,"type":"Research article","title":"Nest characters, nesting success and parental care in some birds at Swami Ramanand Teerth Marathwada University, Nanded, Maharashtra","pub_date":"2017-10-11","year":2017,"authors":"Syeda Gulrez; Shivaji P Chavan; Dipak Puri; Shivaji Poul","journal":"International Journal of Fauna and Biological Studies","volume_pages":"4(6): 11-19","subject":"Breeding biology","institute":"School of Life Sciences, Department of Zoology, Swami Ramanand Teerth Marathwada University, Nanded. PIN431606, Maharashtra State, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":72,"type":"Research article","title":"AVIAN DIVERSITY IN MANJAMALAI SACRED GROVE, MADURAI DISTRICT, TAMIL NADU, INDIA","pub_date":"2021-07-04","year":2021,"authors":"M.Rajesh; A.Gangadharan; R.Kishore3; S.Ganapath","journal":"Journal of Science and Technology","volume_pages":"Volume 06 Issue 04","subject":"Observation","institute":"1Department of Zoology, The American College, Madurai, Tamil Nadu, India.","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":73,"type":"Research article","title":"New species for the avifauna of adjoining coastal areas of Purba Medinipur district, West Bengal, India","pub_date":"2022-11-12","year":2022,"authors":"Piklu das; Atish manna; Arajush Payra","journal":"Ornis Hungarica","volume_pages":"30(2): 208–224.","subject":"Observation","institute":null,"country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":74,"type":"Research article","title":"Diversity and status of avifauna in Todgarh-Raoli Wildlife Sanctuary, Rajasthan, India","pub_date":"2014-10-15","year":2014,"authors":"Vijay Kumar Koli","journal":"Journal of Asia-Pacific Biodiversity","volume_pages":"7 (2014) 401 /407","subject":"Observation","institute":"Wildlife Research Laboratory, Department of Zoology, University College of Science, Mohanlal Sukhadia University, Udaipur, Rajasthan, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":75,"type":"Research article","title":"BIRDS OF BASTAR, CHHATTISGARH","pub_date":"2021-07-05","year":2021,"authors":"Shivam Dubey; Shiv Ji Malviya; Hemlata Pant","journal":"Journal of Natural Resource and Development","volume_pages":"16 (2) 35-43 2021","subject":"Observation","institute":"Govt. Science College, Jabalpur, Madhya Pradesh, India **Department of Zoology, H.N.B. Degree College, Naini, Prayagraj, (U.P.), India ***Department of Zoology, CMP PG College, Prayagraj-211002, (U.P.), India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":76,"type":"Research article","title":"The birds of Araku, Visakhapatnam, AndhraPradesh, India","pub_date":"2009-12-01","year":2009,"authors":"T. Selva Kumar; Rachna Chandra; P.A. Azeez","journal":"Journal of Threatened Taxa","volume_pages":"2(1): 662-665","subject":"Observation","institute":"Environmental Impact Assessment Division, Sálim Ali Centre forOrnithology and Natural History (SACON), Anaikatty (PO),Coimbatore, Tamil Nadu 641108, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":77,"type":"Research article","title":"STUDY ON AVIFAUNAL DIVERSITY AND SPECIES RICHNESS IN FOOT HILLS OF NILGIRIS, TAMILNADU, INDIA","pub_date":null,"year":2015,"authors":"S. JOHN PETER; R. REVATHI; I. JAISANKAR; P. DURAI RASU","journal":"Indian Forester,","volume_pages":"141 (10) : 1067-1074","subject":"Observation","institute":"Forest College and Research Institute Mettupalayam, Tamilnadu, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":78,"type":"Research article","title":"Survey of avian roadkills in NagarjunasagarSrisailam Tiger Reserve, Andhra Pradesh, India","pub_date":null,"year":2010,"authors":"SATYARANJAN BEHERA; JYOTIRMAY JENA","journal":"BirdingASIA","volume_pages":"14 (2010): 92–93","subject":"Mortality","institute":"Senior Research Fellow,Wildlife Institute of India, Dehradun-248001,Uttarakhand, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":79,"type":"Research article","title":"Birds of Rawanwadi Region Bhandara, Central India","pub_date":null,"year":2018,"authors":"Kishor G. Patil; Deeksha Dabrase; Virendra A. Shende","journal":"Patileta","volume_pages":"Volume 5 No 2/2018","subject":"Observation","institute":"Department of Zoology, Institute of Science, R. T. Road, Nagpur (M.S.), INDIA3K. Z. S. Science College, Bramhani-Kalmeshwar, Dist-Nagpur (M.S.), INDIA","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":80,"type":"Research article","title":"Conservation of the Avifauna of Dudwa National Park, India","pub_date":null,"year":1998,"authors":"SALIM JAVED; ASAD R. RAHMANI","journal":"FORKTAIL","volume_pages":"14 (1998): 57-66","subject":"Observation","institute":null,"country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":81,"type":"Research article","title":"Diversity and Conservational Status of Avifauna in Bastar PlateauofChhattisgarh, India","pub_date":"2015-02-01","year":2015,"authors":"Kailash Chandra; Sushil Kumar Dutta; Rajendra Prasad Gupta; Angshuman Raha","journal":"Ambient Science","volume_pages":": Vol. 02(1); 31-43","subject":"Observation","institute":"Zoological Survey of India, M-Block, New Alipore, Kolkata- 700053, West Bengal, India. Department of Zoology, Government PG College, Jagdalpur- 494001, Chhattisgarh, India.","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":82,"type":"Research article","title":"BIRDS OF BALIPADAR- BHETNOI COM M UNITY CONSERVED BLACKBUCK HABITAT, GANJAM , ODISHA, INDIA","pub_date":null,"year":2014,"authors":"SUBRAT DEBATA; S.D. ROUT; H.K. SAHU; C.S. KAR","journal":"Indian Forester","volume_pages":"140 (10) : 965-969 2014","subject":"Observation","institute":"P.G. Dept. of Wildlife & Biodiversity Conservation, North Orissa University, Takatpur,Baripada-757003","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":83,"type":"Thesis","title":"Status of Avifauna of Purna Wildlife Sanctuary","pub_date":null,"year":null,"authors":"Nikunj Jambu","journal":null,"volume_pages":null,"subject":"Observation","institute":null,"country":null,"place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":84,"type":"Research article","title":"Birds of Tipeshwar wildlife Sanctuary, Maharashtra, India","pub_date":null,"year":2013,"authors":"Wanjari AJ¹; Pawar SS; Patil KG³","journal":"Int. Res. J. of Science & Engineering,","volume_pages":"Vol. 1(3):79-84","subject":"Observation","institute":"1Department of Zoology,S.M. Arts, Commerce, and Science College, Pandharkawada. India 2epartment of Biology, Institute of Forensic Science, Nagpur, India 3Department of Zoology, Institute of Science, Nagpur, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":85,"type":"Research article","title":"Observation of road kills on Kambam-Kumily Road (NH 220) in Tamil Nadu","pub_date":"2011-03-01","year":2011,"authors":"K. Muthamizh Selvan","journal":"ZOO's PRINT,","volume_pages":"Volume XXVI Number 3","subject":"Mortality","institute":"Dhole Ecology and conservation Project, Wildlife Institute of India, Dehradun 248001","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":86,"type":"News note","title":"The Birds of The Indian Institute of Science Campus Changes in the avifauna","pub_date":null,"year":1994,"authors":"L. Shyamal","journal":"Newsletter for Birdwatchers","volume_pages":"1994 34(1):pp. 7-9","subject":"Observation","institute":null,"country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":87,"type":"Research article","title":"Bird diversity of agro- forest ecosystem in and around Nagbhid, Maharashtra, India","pub_date":null,"year":2018,"authors":"Deshmukh GD; Dhamani AA2","journal":"International Journal of Life Sciences","volume_pages":"12: March 2018:226-234","subject":"Observation","institute":"1Department of Zoology, RMG College, Nagbhid, Dist-Chandrapur, Maharashtra, India 2Gramgeeta College, Chimur, MS, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":88,"type":"Research article","title":"DISTRIBUTION, POPULATION STATUS AND CONSERVATION OF THE BIRDS IN KARACHI, SINDH, PAKISTAN","pub_date":"2014-02-02","year":2014,"authors":"M Zaheer Khan; Fozia Tabbassum; Syed Ali Ghalib; Afsheen Zehra","journal":"CANADIAN JOURNAL OF PURE AND APPLIED SCIENCES","volume_pages":"Volume 8 Number 1","subject":"Observation","institute":"Department of Zoology, Faculty of Science, University of Karachi, Karachi-75270, Pakistan","country":"Pakistan","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":89,"type":"Research article","title":"SOME OF THE FAMILIAR BIRDS OF INDIA.","pub_date":null,"year":1872,"authors":"Y REV. H. J. BRUCE.","journal":"JSTOR-Scientific Intelligence -harper and bros 1872","volume_pages":null,"subject":"Observation","institute":null,"country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":90,"type":"Research article","title":"Birds of Veerangana Durgawati Wildlife Sanctuary, Damoh (M.P.)","pub_date":null,"year":null,"authors":"Shivam Dubey; Shiv Ji Malviya; Hemlata Pant; Er. Pradeep Kushwaha4","journal":null,"volume_pages":null,"subject":"Observation","institute":"1Government Science College, Jabalpur, (M.P.) 2Uttar Pradesh Higher Education Board, Prayagraj, (U.P.) 3CMP Degree College, University of Allahabad, (U.P.) 4Edwin Incorporation Jabalpur, (M.P.)","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":91,"type":"Research article","title":"The avifaunal diversity of Sigiriya Sanctuary and adjacent areas, North Central province, Sri Lanka","pub_date":null,"year":2014,"authors":"DUMINDA S.B; DISSANAYAKE; S.M. WELLAPPULIARACHI; J.A.H.U. JAYAKODY; S. K. BANDARA","journal":"BirdingASIA","volume_pages":"A 21 (2014): 86–93","subject":"Observation","institute":"Department of Veterinary Pathobiology, Faculty of Veterinary Medicine and Animal Science University of Peradeniya, Sri Lanka","country":"Sri Lanka","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":92,"type":"Research article","title":"Bird habitats in Gosekhurd region of Godavari basin, across Wainganga river India","pub_date":"2019-09-30","year":2019,"authors":"Patil Kishor G; Shende Virendra A; Uke S. B","journal":"Journal of Biological Studies","volume_pages":"Vol.1(4):146-159 2019","subject":"Observation","institute":"Department of Zoology, Government Vidarbha Institute of Science and Humanities, Amravati,India.2Department of Forensic Biology, Government Institute of Forensic Science, Nagpur (M.S.) India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":93,"type":"Research article","title":"BIRDS OF ACHANAKMAR TIGER RESERVE, LORMI, CHHATTISGARH- A STUDY ON THEIR DIVERSITY, DISTRIBUTION AND SEASONALITY","pub_date":null,"year":null,"authors":"Fergus Mark Anthony; Garima Tiwari","journal":"CIBTech Journal of Zoology","volume_pages":"Vol.12 pp.1-13","subject":"Observation","institute":"Department of Forestry, Wildlife & Environmental Sciences, Guru Ghasidas Vishwavidyalaya, Bilaspur, Chhattisgarh, India *Author for Correspondence: fergus.nature@gmail.com","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":94,"type":"Research article","title":"Vertebrate fauna of the Chambal River Basin, with emphasis on the National Chambal Sanctuary, India","pub_date":"2013-02-26","year":2013,"authors":"Tarun Nair; Y. Chaitanya Krishna","journal":"Journal of Threatened Taxa","volume_pages":"5(2): 3620–3641","subject":"Observation","institute":"Gharial Conservation Alliance, Centre for Herpetology - Madras Crocodile Bank Trust, P.O. Box 4, Mamallapuram, Tamil Nadu 603104, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":95,"type":"Research article","title":"Aves of Ajanti reservoir region of Wena River, Hinganghat (Wardha) Central India","pub_date":"2018-04-20","year":2018,"authors":"Patil Kishor G; Bobade Sumedh L; Shende Virendra A; Pawar Santosh S3; Chavhan Arvind B4","journal":"Int. Res. J. of Science & Engineering","volume_pages":"Vol. 6 (2): 55-76","subject":"Observation","institute":"1Department of Zoology, The Institute of Science, 15 Madam Cama Road, Mumbai, India 2K. Z. S. Science College, Bramhani-Kalmeshwar, Dist- Nagpur (M.S.), India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":96,"type":"Research article","title":"Faunal Diversity in the Rasik Beel Wetland Complex (Tufanganj, India)","pub_date":null,"year":null,"authors":null,"journal":"Animal Diversity, Natural History and Conservation","volume_pages":"Vol. 1","subject":"Observation","institute":"Department of Zoology, Tufanganj Mahavidyalaya, Tufanganj – 736 160, West Bengal, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":97,"type":"Research article","title":"Avifaunal Diversity of Bibhutibhushan Wildlife Sanctuary, West Bengal, India","pub_date":null,"year":2017,"authors":"Shiladitya Mukhopadhyay; Subhendu Mazumdar","journal":"World Scientific News","volume_pages":"71 (2017) 150-167","subject":"Observation","institute":"1Post Graduate Department of Zoology, Barasat Government College, North 24 Parganas, India 2Department of Zoology, Shibpur Dinobundhoo Institution (College), Shibpur, Howrah, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":98,"type":"Research article","title":"Survey of the avifauna at Muong Nhe Nature Reserve, Dien Bien province, Vietnam","pub_date":null,"year":2018,"authors":"LE MANH HUNG; MARK B. ROBBINS; NATHAN H. RICE; ERICK A. GARCÍA-TREJO","journal":"FORKTAIL 28","volume_pages":"L 28 (2012): 101–106","subject":"Observation","institute":null,"country":"Vietnam","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":99,"type":"Research article","title":"EVOLUTION OF OLFACTION IN NON-AVIAN THEROPOD DINOSAURS AND BIRDS","pub_date":"2011-03-25","year":2011,"authors":"Darla K. Zelenitsky; Francois Therrien; Ryan C. Ridgely; Amanda R. McGee; Lawrence M. Witmer3","journal":"PROCEEDING OF THE ROYAL SOCIETY","volume_pages":"(2011) 00 1–10","subject":"Anatomy and physiology","institute":null,"country":"Canada","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":100,"type":"Research article","title":"POPULATION AND BREEDING STATUS OF AVIFAUNA IN A HIGHLY FRAGMENTED GRASSLAND PATCH NEAR SOLAPUR, MAHARASHTRA","pub_date":null,"year":2012,"authors":"R.V.Hippargi1; P.M. Bolde; S.V. Manthen; S.R. Aland1","journal":"Avishkar – Solapur University Research Journal,","volume_pages":"Vol. 2 2012","subject":"Breeding biology","institute":null,"country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":101,"type":"Research article","title":"Improvement of individual camouflage through background choice in ground-nesting birds","pub_date":"2017-07-31","year":2017,"authors":"Martin Stevens; Jolyon Troscianko; Jared K. Wilson-Aggarwal; Claire N. Spottiswoode","journal":"Nature Ecology & EvoluTIon","volume_pages":null,"subject":"Breeding biology","institute":"Centre for Ecology & Conservation, College of Life & Environmental Sciences, University of Exeter, Penryn Campus, Penryn, Cornwall TR10 9FE, UK. 2 Department of Zoology, University of Cambridge, Downing Street, Cambridge CB2 3EJ, UK. 3 DST-NRF Centre of Excellence at the FitzPatrick Institute of African Ornithology, University of Cape Town, Rondebosch 7701, South Africa.","country":"UK and Africa","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":102,"type":"Research article","title":"Conservation status, species composition, and distribution of Avian Community in Bhimbandh Wildlife Sanctuary, India","pub_date":"2016-07-07","year":2016,"authors":"Mohd. Shahnawaz Khan; Anjana Pant","journal":"Journal of Asia-Pacific Biodiversity","volume_pages":null,"subject":"Conservation status","institute":"aWorld Wide Fund for Nature-India, New Delhi, India b Wildlife and We Protection Foundation, Mumbai, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":103,"type":"Research article","title":"Avifaunal diversity of Govind Sagar dam in Lalitpur, Uttar Pradesh","pub_date":"2016-08-15","year":2016,"authors":"Devendra Kumar; Sonika Kushwaha; Sachin K Maheshwari; Abhishek Namdev2","journal":"Int. J. Res. Biosciences,","volume_pages":"5(4) 43-55 (2016)","subject":"Observation","institute":"1CCF, Forest Department Jhansi, Uttar Pradesh, INDIA 2 Indian Biodiversity Conservation Society, Jhansi, Uttar Pradesh, INDIA","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":104,"type":"Research article","title":"A checklist of the birds of Goa, India","pub_date":"2018-01-07","year":2018,"authors":"Pronoy Baidya; Mandar Bhagat","journal":"indian birds","volume_pages":"S 14 (1): 1–31","subject":"Observation","institute":"Pronoy Baidya, TB-03, Center for Ecological Sciences, Indian Institute of Science, Bengaluru 560012, Karnataka, India. And, Foundation for Environment Research and Conservation, C/o 407, III-A, Susheela Seawinds, Alto-Vaddem, Vasco-da-Gama 403802, Goa, India. E-mail: pronoybaidya@iisc.ac.in [Corresponding author] [PB]","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":105,"type":"Research article","title":"Bird observations from Valmiki Tiger Reserve, Bihar","pub_date":"2015-11-23","year":2015,"authors":"Anwaruddin Choudhury","journal":"indian birds","volume_pages":"11 (3): 57–63","subject":"Observation","institute":"Anwaruddin Choudhury, Secretary to the Government of Assam, House No. 7, Islampur Road, Near Gate No. 1 of Nehru Stadium, Guwahati 781007, Assam, India. E-mail: acbadru56@gmail.com","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":106,"type":"Research article","title":"Birds of Balukhand-Konark Wildlife Sanctuary, Puri, Odisha, India","pub_date":"2020-05-05","year":2020,"authors":"N. C. PALEI; A.K. BAL; B.P. RATH; H.B. UDGATA","journal":"e-planet","volume_pages":"18 (1): 61-78","subject":"Observation","institute":"Principal Chief Conservator of Forests (Wildlife) and Chief Wildlife Warden, Odisha, India *2Department of Wildlife and Conservation Biology, North Orissa University, Baripada, Odisha, India * 3O/o Divisional Forest Officer, Puri (Wildlife) Division, Puri, Odisha, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":107,"type":"Research article","title":"A Notational Composition of Bird Species of Nilgiri Western Slope Forests - A Paradise of Avifauna in the Southern Western Ghats","pub_date":"2022-11-01","year":2022,"authors":"M. G.Sanalkumar; S.Nandakumar; S.Vaisakh; R.S.Balamurali; S. Sankar","journal":"International Journal of Scientific and Research Publications,","volume_pages":"Volume 2 Issue 11","subject":"Observation","institute":"Postgraduate & Research Department of Zoology, N.S.S. College, Pandalam - 689 501 Division of Forestry & Human Dimensions, Kerala Forest Research Institute, Peechi - 680 653 Kerala, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":108,"type":"Research article","title":"Assessment of diversity and threats of avifauna in and around Sonavade village (Tarf-Kalsuli), Dist-Sindhudurg, Maharashtra , India","pub_date":"2017-12-14","year":2017,"authors":"Pritesh Ghadigaonkar; Akshay Pandirkar; Johnson Varkey; Pradnya Bandekar","journal":"International Research Journal of Biological Sciences","volume_pages":"Vol. 6(12) 7-14","subject":"Observation","institute":"1Ecocare Ecology Consultant, 10 Hedvekar wadi no. 2, D.S. Babrekar Marg, Gokhale Road, Dadar west Mumbai 400028, MS, India 2","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":109,"type":"Research article","title":"Study on Bird Diversity of Majal Water Reservoir of Taluka Lanja, Dist. Ratnagiri, Maharashtra, India","pub_date":"2021-01-31","year":2021,"authors":"Lawate D v; Berde V. B; Ghoble S. S.","journal":"INTERNATIONALJOURNALFORINNOVATIVERESEARCH IN MULTIDISCIPLINARYFIELD I","volume_pages":null,"subject":"Observation","institute":"Department of Zoology, Arts, Commerce and Science College, Lanja.","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":110,"type":"Research article","title":"Studies on Avifauna of Attappady and Anaikatty, Western Ghats, Southern India","pub_date":"2016-12-10","year":2016,"authors":"R Aruna; P Balasubramanian","journal":"International Journal of Fauna and Biological Studies","volume_pages":"4(1): 45-48","subject":"Observation","institute":"PG and Research Department of Botany, Thiagarajar College, Madurai, Tamil Nadu, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":111,"type":"Research article","title":"Status, Distribution, and Diversity of Birds in Mining Environment of Kachchh, Gujarat","pub_date":"2013-03-08","year":2013,"authors":"Nikunj B. Gajera; Arun Kumar Roy Mahato; V. Vijay Kumar","journal":"International Journal of Biodiversity","volume_pages":"Volume 2013 Article ID 471618","subject":"Observation","institute":"Gujarat Institute of Desert Ecology, Mundra Road, P.O. Box 83, Bhuj, Kachchh, Gujarat 370001, India Correspondence should be addressed to Nikunj B. Gajera; gajeranikunj@gmail.com","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":true},{"id":112,"type":"Research article","title":"LIST OF INDIAN BIRDS' EGGS","pub_date":null,"year":1899,"authors":null,"journal":"JBNHS","volume_pages":"12(4) 734","subject":"Breeding biology","institute":null,"country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":113,"type":"Research article","title":"Avifauna Diversity of Yashwantrao Chavan College Campus Halkarni and its Vicinity","pub_date":"2015-08-08","year":2015,"authors":"N.C. Hiragond; A.S. Lokhande","journal":"ZOO’s PRINT","volume_pages":"VOL 23","subject":"Observation","institute":"Department of Zoology, Yashwantrao Chavan College, Halkarni, Tal. Chandgad, Dt. Kolhapur, Maharashtra, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":114,"type":"Research article","title":"Avifaunal diversity, distribution and threats in Dibru-Saikhowa Biosphere Reserve North-East India Assam (India): A review","pub_date":null,"year":2014,"authors":"Rajendra Joshi; Shivaji Chaudhry; Lok Man Singh Palni; Vaibhav Chandra Mathur","journal":"Scholars Research Library","volume_pages":"2014, 6 (5):113-124","subject":"Observation","institute":"G.B. Pant Institute of Himalayan Environment and Development, North East Unit, Itanagar Arunanchal Pradesh","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":115,"type":"Research article","title":"A CHECKLIST OF BIRD DIVERSITY IN GURU GHASIDAS UNIVERSITY CAMPUS, BILASPUR, CHHATTISGARH, INDIA","pub_date":"2019-03-01","year":2019,"authors":"Alok Kumar Chandrakar; S. S. Dhuria","journal":"ECO-CHRONICLE","volume_pages":"Vol. 14, No. 1","subject":"Observation","institute":"Department of Forestry, Wildlife & Environmental Sciences Guru Ghasidas Vishwavidyalaya, Koni, Bilaspur, Chhattisgarh, India.","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":116,"type":"Research article","title":"The Water Birds of Gidhwa & Parsada Wetlands, Nandghat, Bemetara, Chhattisgarh (India)","pub_date":"2014-10-10","year":2014,"authors":"Devendra Sharma; Anurag Vishwakarma; K. C. Yadav","journal":"International Journal of Scientific and Research Publications","volume_pages":"Volume 4, Issue 10,","subject":"Observation","institute":"State Forest Research & Training Institute, Raipur, Chhattisgarh (India)","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":117,"type":"Research article","title":"Avian Fauna of proposed wind power project area at Chillavaripalli and Ellutla reserve forests","pub_date":"2016-10-09","year":2016,"authors":"VV Bala Subramanyam; YD Imran Khan","journal":"Journal of Entomology and Zoology Studies","volume_pages":"JEZS 2016; 4(6): 722-728","subject":"Observation","institute":"Department of Zoology, Sri Krishnadevaraya University, Ananthapuramu, Andhra Pradesh, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":118,"type":"Research article","title":"Animal Diversity of Shukacharya Hills in Sangli District, Maharashtra","pub_date":null,"year":2010,"authors":"Sanjay S. Sathe; Sandhya M. Pawar; Sanjay M. Kumbhar","journal":"Nature Environment and Pollution Technology An International Quarterly Scientific Journa","volume_pages":"Vol. 9 No. 1 pp. 119-122","subject":"Observation","institute":"Department of Biological Sciences, P.D. Vasantraodada Patil Mahavidyalaya, Tasgaon-416 312, Maharashtra, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":119,"type":"Research article","title":"A study of Avifauna from Girnar Wildlife Sanctuary, Junagadh, Gujarat, India","pub_date":"2022-12-31","year":2022,"authors":"Usha J. Zala; Jatin V. Raval; Romanch S. Nimavat; Namrata K. Hun","journal":"Journal of Animal Diversity","volume_pages":"Volume 4, Issue 4 (2022)","subject":"Observation","institute":"Zoology Lab, Department of Life Sciences, Bhakta Kavi Narsinh Mehta University, Junagadh, Gujarat, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":true},{"id":120,"type":"Research article","title":"RICHNESS OF AVIFAUNA IN GOREWADA INTERNATIONAL BIO-PARK, NAGPUR, CENTRAL INDIA","pub_date":"2016-03-01","year":2016,"authors":"Virendra A. Shende; Kishor G. Patil","journal":"Asia Pac. j. energy environ.","volume_pages":"Volume2, No 3/2015","subject":"Observation","institute":"Department of Zoology, K. Z. S. Science College, Bramhani-Kalmeshwar, Dist- Nagpur (M.S.), INDIA","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":121,"type":"Research article","title":"Avian diversity in and around the Shivaji University campus, Kolhapur district, Maharashtra, India","pub_date":"2016-10-18","year":2016,"authors":"Sunny B. Bhivate; Nachiket S. Patil","journal":"B I O L I F E","volume_pages":"4(4):653-660","subject":"Observation","institute":"Department of Zoology, Shivaji University, Kolhapur-416 004, Maharashtra, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":122,"type":"Research article","title":"Decadal changes and additions to birds of Pondicherry University, Puducherry, India","pub_date":"2016-02-10","year":2016,"authors":"Pronoy Baidya; Hanuman Gawas; Shubhadeep Mukherjee; Sandesh Gawas","journal":"Indian Birds","volume_pages":"Vol. 11 No. 2","subject":"Observation","institute":"Centre for Ecological Sciences, Indian Institute of Science, Bangalore 560012","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":123,"type":"Research article","title":"Diversity of Birds Fauna in Jhargram, West Bengal, India","pub_date":"2021-11-05","year":2021,"authors":"Dipak Das; Samir Patra; Supriya Jana; Atanu Bera; Banashree Jana","journal":"Journal of Indian Association for Environmental Management","volume_pages":"Vol. 41, No. 4 (2021), 38-44","subject":"Observation","institute":"Doro Krishnanagar Bani Mandir (H.S), Haldia, 721635","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":124,"type":"Research article","title":"A checklist of birds in and around Taralu village, adjoining the western margin of the Bannerghatta National Park, Karnataka","pub_date":"2016-05-18","year":2016,"authors":"Sagarika Phalke; JV John; M Jayashankar; K Avinash","journal":"Journal of Entomology and Zoology Studies","volume_pages":"; 4(4): 413-415","subject":"Observation","institute":null,"country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":125,"type":"Research article","title":"Wildlife of Border Belt Game Reserve District Narowal, Punjab, Pakistan","pub_date":null,"year":2005,"authors":"M. Akbar; R.A.J. Khan; S. Mehboob; Z.U. Nisa","journal":"Pakistan Journal of Life and Social Sciences","volume_pages":"3(1-2): 13-17","subject":"Observation","institute":"Punjab Wildlife Research Institute, Gatwala, Faisalabad, Pakistan","country":"Pakistan","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":126,"type":"Research article","title":"OBSERVATION ON VERTEBRATE FAUNA OF D'ERING MEMORIAL WILDLIFE SANCTUARY, ARUNACHAL PRADESH","pub_date":null,"year":2005,"authors":"K. K. BISWAS; P. C. SOREN; D. BASU; S. CHATTOPADHYAY; S. BHUINYA","journal":"Rec. zool. Surv. India","volume_pages":"105 (Part 3-4) : 169-188,","subject":"Observation","institute":"Zoological Survey of India, M-Block, New Alipore, Kolkala-700 053","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":127,"type":"Research article","title":"Gwendolen (Wendy) Mary Beryl Sparks (1916–2007): a Gujarat sojourn in 1947–1948","pub_date":"2010-12-24","year":2010,"authors":"Aasheesh Pittie","journal":"Indian Birds","volume_pages":"Vol. 6 Nos. 6","subject":"Observation","institute":null,"country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":true},{"id":128,"type":"Research article","title":"Birds of the Kerala Agricultural University campus, Thrissur District, Kerala, India","pub_date":"2017-08-26","year":2017,"authors":"K. Abha Manohar; Arjun Ramachandran; M.S. Syamili; E.R. Sreekumar; Nithin Mohan","journal":"Journal of Threatened Taxa","volume_pages":"9(8): 10585–10612","subject":"Observation","institute":"Centre for Wildlife Studies, College of Forestry, Kerala Agricultural University, KAU Main Campus, Thrissur, Kerala 680656, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":129,"type":"Research article","title":"CHECKLIST OF BIRDS RECORDED IN AND AROUND PATAN TEHSIL REGION, SATARA DISTRICT (MAHARASHTRA) INDIA","pub_date":"2017-04-01","year":2017,"authors":"dattatary thorat","journal":"INTERNATIONAL JOURNAL FOR RESEARCHES IN BIOSCIENCES, AGRICULTURE AND TECHNOLOGY","volume_pages":"(1),vol-V","subject":"Observation","institute":null,"country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":130,"type":"Book","title":"BIRD DIVERSITY IN CHIPLUN TOWN (M. S.)","pub_date":null,"year":2013,"authors":"RajeGulabraoBapu; H. T. Babar; S. S. Waghmode; SachinPalkar","journal":"Current Trends in LIFE SCIENCES","volume_pages":null,"subject":"Observation","institute":"Department of Zoology, D. B. J. College, Chiplun, Dist. Ratnagiri (M.S.), India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":131,"type":"Research article","title":"A checklist of the Birds of Ghatigaon Wildlife Sanctuary, Dist. Gwalior, Madhya Pradesh","pub_date":"2014-01-01","year":2014,"authors":"S. Sambath; S. S. Talmale; m.e.limje","journal":"BIONOTES","volume_pages":"Bionotes 16 (2) : 52-56.","subject":"Observation","institute":"Zoological Survey of India cwntral region","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":132,"type":"Research article","title":"Checklist of Birds and Mammals of Kolvihire, a Threatened Grassland in Purandar Taluka, Pune District, Maharashtra, India","pub_date":"2019-06-30","year":2019,"authors":"Omkar Sumant; Rahul Lonkar; Rajkumar Pawar; Satish Pande","journal":"Ela Journal of Forestry and Wildlife","volume_pages":"| Vol. 8 (1 & 2)","subject":"Observation","institute":null,"country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":133,"type":"Research article","title":"Updated Avifaunal list of Ansupa Lake and its adjoining areas, Cuttack, Odisha, India, with notes on the record of Grey-necked Bunting (Emberiza buchanani)","pub_date":"2019-06-30","year":2019,"authors":"Arajush Payra; Suraj Kumar Dash; Himanshu Shekhar Palei; Arun Kumar Mishra; Rabindra Kumar Mishra","journal":"Ela Journal of Forestry and Wildlife","volume_pages":"| Vol. 8 (1 & 2)","subject":"Observation","institute":"Department of Wildlife and Biodiversity Conservation, North Orissa University, Odisha, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":134,"type":"Research article","title":"Checklist of the avifauna of Sagareshwar Wildlife Sanctuary, Maharashtra, India","pub_date":"2018-09-26","year":2018,"authors":"Sharad Dat Apte; Vijay Bhagwan Tuljapurkar; Girish Avinash Jathar","journal":"Journal of Threatened Taxa","volume_pages":"10(10): 12368–12375","subject":"Observation","institute":"Bombay Natural History Society, Hornbill House, S.B. Singh Road, Mumbai, Maharashtra 400001, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":135,"type":"Research article","title":"Avifauna of Karaivetti Bird Sanctuary, Tamil Nadu, India","pub_date":"2013-11-01","year":2013,"authors":"V. Gokula","journal":"ZOO’s PRINT","volume_pages":"Volume XXVIII","subject":"Observation","institute":"Department of Zoology, National College, Tiruchirappalli, Tamil Nadu – 620001, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":136,"type":"Research article","title":"A checklist of birds recorded at Sukila Phanta Wildlife Reserve, Nepal","pub_date":"2009-12-05","year":2009,"authors":"H.S. Baral; C. Inskipp","journal":"our nature","volume_pages":"7: 56-81","subject":"Observation","institute":"Himalayan Nature, PO Box 10918, Lazimpat, Kathmandu, Nepal 1 Herneside, March Road, Welney, Wisbech, Cambridgeshire PE14 9SB, UK","country":"Nepal","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":137,"type":"Thesis","title":"A Rapid Biodiversity Assessment of the Campus","pub_date":null,"year":2019,"authors":"Dr. Sanjeev B. Nalavade","journal":"Fergusson CentrE for Higher Learning Tirupati","volume_pages":null,"subject":"Observation","institute":"Department of Geography, DES’s Fergusson College, Pune","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":138,"type":"Research article","title":"Avifaunal Diversity of Tamkarada Forest, Near Malegaon Tehsil of Washim district","pub_date":null,"year":2015,"authors":"Purushottam Ingle; Milind Sawdekar; Shivaji Bali","journal":"International Journal of Science and Research (IJSR)","volume_pages":"Value (2013): 6.14","subject":"Observation","institute":"1Bombay Natural History Society, Hornbill House, Dr Salim Ali Chowk, Shaheed Bhagatsingh Road, Mumbai 400 001(India)","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":139,"type":"Research article","title":"Distribution of birds in relation to vegetation in the calicut university campus, kerala","pub_date":"2003-04-24","year":2003,"authors":"Boby jose; V.J. Zacharias","journal":null,"volume_pages":"18(9):1187-1192","subject":"Observation","institute":"Department of zoology St. joseph`s collage Devagiri,kohokode,kerala 673008, INDIA","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":140,"type":"Research article","title":"Bird community of Rajiv Gandhi Orang National Park, Assam","pub_date":"2019-07-17","year":2019,"authors":"Biswajit Chakdar; Hilloljyoti Singha; Manabendra Ray Choudhury","journal":"Journal of Asia-Pacific Biodiversity","volume_pages":"12 (2019) 498-507","subject":"Observation","institute":"Department of Ecology and Environmental Science, Assam University, 788011, Cachar, Assam, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":141,"type":"Case study","title":"Thar Desert and its Natural Resources: A Case Study of the District Tharparkar in Sindh Province of Pakistan","pub_date":null,"year":null,"authors":null,"journal":"Progressive Research Journal of Arts and Humanities (PRJAH)","volume_pages":"Vol. 3, No. 1, 2021","subject":"Observation","institute":"Department of Economics, Shaheed Benazir Bhutto University, Shaheed Benazirabad, Sindh, Pakistan.","country":"Pakistan","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":142,"type":"Research article","title":"Study on avifaunal diversity of Wainganga river basin at Balaghat district of Madhya Pradesh","pub_date":"2021-08-06","year":2021,"authors":"DM Agase; MK Bisen; MS Markam; TS Kothe; AS Soni","journal":"Journal of Entomology and Zoology Studies","volume_pages":"9(5): 205-213","subject":"Observation","institute":"Department of Zoology, Govt. J.S.T.P.G. College, Balaghat, Madhya Pradesh, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":143,"type":"Research article","title":"Avian Diversity in around the Baitarani Reserve Forest of Joda, Keonjhar District Odisha, India","pub_date":null,"year":null,"authors":"Raja Reddy, G'; Baskaran, M'; Kumara Swamy, G'","journal":"Newsletter for Birdwatchers","volume_pages":"53 (5), 2013","subject":"Observation","institute":"PG & Reserch Department of Zoology and Wildlife ry AV.C. Sr (Autonomous) Manampandal, Mayiladuthurai — 609 305, Tamil Nadu","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":144,"type":"Research article","title":"Birds of Darewadi Learning Centre and Watershed","pub_date":null,"year":2014,"authors":"Girish Jathar","journal":"BUCEROS","volume_pages":"Vol. 19, No. 2","subject":"Observation","institute":null,"country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":145,"type":"Research article","title":"CURRENT STATUS AND BIODIVERSITY OF INDUS DOLPHIN RESERVE AND INDUS DELTA WETLANDS (RAMSAR SITES)","pub_date":null,"year":2006,"authors":"M. Zaheer Khan","journal":"Refereed Proceedings 9th International Riversymposium, Brisbane, Australia","volume_pages":null,"subject":"Observation","institute":"Department of Zoology (Wildlife & Fisheries), University of Karachi, Karachi-75270","country":"Pakistan","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":146,"type":"Research article","title":"THE PREY OF TIGERS AND THEIR FOOD IN TIGER ZONE OF PERIYAR TIGER RESERVE: DIVERSITY AND CONSERVATION","pub_date":"2016-06-30","year":2016,"authors":"Padma Mahanti; Bivash Pandav and; Smita Mishra Panda","journal":"International Journal of Current Research","volume_pages":"Vol. 8, Issue, 06, pp.33787-33791","subject":"Observation","institute":"School of Management, Centurion University of Technology & Management, Bhubaneswar, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":147,"type":"Book review","title":"Atlas of Birds of Iran. Mohammad Kaboli, Mansour Aliabadian, Mohammad Tohidifar, Alireza Hashemi, Seyed Babak Musavi and Cees C. Roselaar. Iran Department of the Environment, Tehran. 617 pp.","pub_date":"2020-03-31","year":2020,"authors":"Abolghasem Khaleghizadeh","journal":"Journal of Animal Diversity","volume_pages":", 2 (1): 100–103","subject":"Observation","institute":"Agricultural Zoology Research Department, Iranian Research Institute of Plant Protection, Agricultural Research, Education and Extension Organization, Tehran, Iran","country":"Iran","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":148,"type":"Research article","title":"Role of water canals in coservation of avifaunal diversity in and around of karad tahasil of satara district, M.S, India","pub_date":"2014-04-05","year":2014,"authors":"Sampatrao Shivajirao Patil; Sanjay ShamraoNanware","journal":"Applied Zoology","volume_pages":"69 (2014) 23033-23036","subject":"Observation","institute":"Department of Zoology, Krishna Mahavidyalaya Rethare (Bk.)- 415108, Shivnagar, Tal. Karad, Dist. Satara, M. S., India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":149,"type":"Research article","title":"Diversity, Distribution and Status of Birds of Kolleru Lake - A Ramsar Site in Andhra Pradesh","pub_date":null,"year":2015,"authors":"Dr. B. Bharatha Lakshmi; Dr. B.T. Rao; Dr. K. Rama Rao; Dr. Y. Poli Naidu","journal":"International Journal of Innovative Research in Science, Engineering and Technology","volume_pages":"Vol. 4, Issue 7","subject":"Observation","institute":"Department of Zoology, Andhra University, Visakhapatnam, A.P., India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":150,"type":"Research article","title":"A preliminary observation on the avifauna of Rajura Lake, Jalgaon (Jamod), Buldhana district, Maharashtra","pub_date":null,"year":2011,"authors":"Prasanna Subhash Joshi","journal":"Indian Streams Research Journal","volume_pages":"Vol - I, Issue - V","subject":"Observation","institute":"[S.S.S.K.R. Innani Mahavidyalaya, Karanja (Lad) Dist : Washim","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":151,"type":"Research article","title":"STATISTICAL ANALYSIS OF AVIAN FAUNAL DIVERSITY AT RANI DURGAWATI VISHWAVIDYALAYA (RDVV) CAMPUS, JABALPUR, M.P.","pub_date":"2020-05-29","year":2020,"authors":"Hemlata Pant; Shiv Ji Malviya; Shivam Dubey","journal":"Journal of Natural Resource and Development","volume_pages":"15 (2) 55-58","subject":"Observation","institute":"Department of Zoology CMP Degree College Prayagraj, (U.P.) , India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":152,"type":"Research article","title":"AVIAN FAUNAL DIVERSITY OF RIVER NARMADA BASIN AT JABALPUR DISTRICT OF MADHYA PRADESH","pub_date":"2020-07-02","year":2020,"authors":"Hemlata Pant; Shiv Ji Malviya; Shivam Dubey","journal":"Journal of Natural Resource and Development","volume_pages":"15 (2) 55-58","subject":"Observation","institute":"Department of Zoology CMP Degree College Prayagraj, (U.P.) , India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":153,"type":"Research article","title":"Faunal diversity of Ameenpur Lake, Telangana state, India: A biodiversity heritage site","pub_date":"2016-12-12","year":2016,"authors":"G Sailu; B Laxmi Narayana; Deepak Ramaiyan; B Naresh; V Vasudeva Rao","journal":"Journal of Entomology and Zoology Studies","volume_pages":"2017; 5(1): 512-526","subject":"Observation","institute":"All India Network Project on Vertebrate Pest Management, Professor Jayashankar Telangana State Agricultural University, Rajendranagar, Hyderabad- 500030, Telangana, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":154,"type":"Research article","title":"Avifauna of Kambalakonda Wildlife Sanctuary, Visakhapatnam, Andhra Pradesh, India","pub_date":null,"year":2008,"authors":"P. S. Raja Sekhar; Rahul Pandey; K. L. N. Murthy","journal":"Indian Birds","volume_pages":"Vol. 4 No. 5 157/159","subject":"Observation","institute":"Dept. of Environmental Sciences, Andhra University, Visakhapatnam 530003, Andhra Pradesh.","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":155,"type":"Research article","title":"A Preliminary assessment and diversity of birds in Ramagiri east and west forest, Ananthapuram District, Andhra Pradesh, India","pub_date":null,"year":2017,"authors":"VV Bala Subramanyam","journal":"International Journal of Zoology Studies","volume_pages":"Volume 2; Issue 4 . 21-28","subject":"Observation","institute":"Department of Zoology, Sri Krishnadevaraya University, Ananthapuram, Andhra Pradesh, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":156,"type":"Research article","title":"A revised avian checklist of Tadoba Andhari Tiger Reserve (TATR), Chandrapur, Maharashtra, India","pub_date":"2017-02-12","year":2017,"authors":"Abhijeet Bayani","journal":"Indian BIRDS","volume_pages":"Vol. 13 No. 5","subject":"Observation","institute":"Indian Institute of Science Education and Research (IISER), Dr. Homi Bhabha Road, Pashan, Pune 411008, Maharashtra, India.","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":157,"type":"Research article","title":"An annotated list of the birds of Cambodia from 1859 to 1970","pub_date":null,"year":2003,"authors":"W. W. THOMAS; C. M. POOLE","journal":"FORKTAIL","volume_pages":"19 (2003): 103-127","subject":"Observation","institute":"Wildlife Conservation Society Cambodia Program, PO Box 1620, Phnom Penh, Cambodia.","country":"Cambodia","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":158,"type":"Research article","title":"An Updated Checklist of the Birds of Iran","pub_date":"2006-04-20","year":2006,"authors":"DEREK A. SCOTT; ALI ADHAMI","journal":"Podoces","volume_pages":"2006, 1 (1/2): 1–16","subject":"Observation","institute":"Iran Eco-Tour Engineers Co., 1th Floor, No. 32, Fajr Street, Ghaem-Magham Avenue, Tehran, Iran","country":"Iran","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":159,"type":"Research article","title":"Birds of Sabaragamuwa University campus, Buttala, Sri Lanka","pub_date":"2010-05-26","year":2010,"authors":"Thilina Dilan Surasinghe; Chamitha De Alwis","journal":"Journal of Threatened Taxa","volume_pages":"2(5): 876-888","subject":"Observation","institute":"Department of Forestry and Natural Resources, 261, Lehotsky Hall, Clemson University, Clemson, SC 29634-0317, USA","country":"Sri Lanka","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":160,"type":"Research article","title":"Determination of Faunal Diversity in Jamkani Reserve Forest, Sundargarh, Odisha, and the Impact of Mining on it","pub_date":null,"year":2014,"authors":"S. Gouda; S. Begum; K. Pramanik; J. Sethy; H.K. Sahu","journal":"Biodiversity Conservation, Research and Management","volume_pages":null,"subject":"Observation","institute":"Department of Biotechnology & Medical Engineering, National Institute of Technology Rourkela - 769008, Odisha, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":161,"type":"Research article","title":"The status and distribution of major aquatic fauna in theNational Chambal Gharial Sanctuary in Rajasthan with specialreference to the Gangetic Dolphin Platanista gangeticagangetica(Cetartiodactyla: Platanistidae)","pub_date":"2008-02-03","year":2008,"authors":"Anil K. Nair","journal":"Journal of Threatened Taxa","volume_pages":"1(3): 141-146","subject":"Observation","institute":"81, Shopping Center, Kota, Rajasthan 324007, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":162,"type":"Research article","title":"Assessment of native and migrant bird species in a riverine ecosystem of India","pub_date":"2019-04-04","year":2019,"authors":"Nandagopal P; Harish R. Bhat","journal":"International Research Journal of environmental sciences","volume_pages":"Vol. 8(4), 1-11","subject":"Observation","institute":"Department of Environmental Science, Bangalore University, Jnanabharathi Campus, Bengaluru-560056, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":163,"type":"Research article","title":"CURRENT DISTRIBUTION AND STATUS OF THE MAMMALS, BIRDS AND REPTILES IN RANN OF KUTCH WILDLIFE SANCTUARY, SINDH","pub_date":null,"year":2013,"authors":"Syed Ali Ghalib; M Zaheer Khan; Saquib Aijaz Hussain; Afsheen Zehra; Naseem Samreen","journal":"INTERNATIONAL JOURNAL OF BIOLOGY AND BIOTECHNOLOGY","volume_pages":"10 (4): 601-611, 2013.","subject":"Observation","institute":"Department of Zoology (Wildlife & Fisheries), University of Karachi, Karachi. 75270","country":"Pakistan","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":164,"type":"Research article","title":"Vulnerable endangered, threatened and rare species categories in the submergence area of Polavaram area","pub_date":null,"year":2012,"authors":"D Ramprasad Naik; S A Rahiman; Kaizar Hossain","journal":"European Journal of Experimental Biology","volume_pages":"2012, 2 (1):288-296","subject":"Observation","institute":"Department of Geo-Engineering, College of Engineering, Andhra University, Visakhaptnam, AP, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":165,"type":"Research article","title":"STUDIES ON INSECTIVOROUS AVIAN DIVERSITY IN AGRONOMY FIELDS OF VAIJAPUR DIST. AURANGABAD (MS) INDIA","pub_date":null,"year":2019,"authors":"Chandrakant V. SIRSAT","journal":"Journal of Global Resources","volume_pages":"Volume 5 (02) 25-31","subject":"Food habits","institute":"Department of Zoology, VinayakraoPatilMahavidyalaya, Vijapur Dist. Aurangabad (MS) India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":166,"type":"Research article","title":"AVIFAUNA OF THRISSUR DISTRICT, KERALA, INDIA","pub_date":null,"year":2005,"authors":"E.A. JAYSON; C. SIVAPERUMAN","journal":"ZOO’s PRINT","volume_pages":"20(2):1774-1783","subject":"Observation","institute":"Division of Forest Ecology and Biodiversity Conservation, Kerala Forest Research Institute, Peechi, Thrissur, Kerala 680653, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":167,"type":"Book","title":"AN UPDATED CHECKLIST OF THE BIRDS OF UTTARAKHAND","pub_date":null,"year":2015,"authors":"Dhananjai Mohan; Sanjay Sondhi","journal":null,"volume_pages":null,"subject":"Observation","institute":null,"country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":168,"type":"Research article","title":"Avifaunal Survey to Understand Bird- Habitat Linkages at Khijadiya Wildlife Sanctuary and Gosabara Wetland in Gujarat","pub_date":null,"year":2017,"authors":"Nikunj Jambu","journal":null,"volume_pages":null,"subject":"Observation","institute":null,"country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":true},{"id":169,"type":"Research article","title":"STUDY ON THE POTENTIAL ENVIRONMENTAL IMPACTS OF WIND FARM DEVELOPMENT IN AGALI, ATTAPPADI, KOTTATHARA AND NALLASINGAM AREAS OF PALAKKAD DISTRICT, KERALA","pub_date":null,"year":2014,"authors":"Dr. Arun P R; Rajan. P","journal":"Sálim Ali Centre for Ornithology and Natural History (SACON)","volume_pages":null,"subject":"Observation","institute":"Sálim Ali Centre for Ornithology and Natural History (SACON) Anaikatty, Coimbatore-641 108","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":170,"type":"Research article","title":"Bird conservation in Pochamaria village of Rajshahi district of Bangladesh","pub_date":null,"year":2011,"authors":"M.S.I. Selim; M.J.U. Sarder; M.A.L. Sarker; M.K. Islam","journal":"J. Agrofor. Environ.","volume_pages":null,"subject":"Observation","institute":"Department of Animal Husbandry and Veterinary Science, 1Department of Botany, Rajshahi University, Rajshahi, 2Department of Physiology, Bangladesh Agricultural university, Mymensingh","country":"Bangladesh","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":171,"type":"Research article","title":"STUDIES OF THE AVIFAUNA IN URBAN LIMITS OF AJMER, RAJASTHAN, INDIA","pub_date":null,"year":2020,"authors":"Mriganka Upadhyay; Reena Vyas; Vivek Sharma; Satya Prakash Mehra","journal":"International Journal of Research - GRANTHAALAYAH","volume_pages":", Vol.8 (Iss.3)","subject":"Observation","institute":"Department of Zoology, S.P.C. Govt. College Ajmer, (Rajasthan), India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":172,"type":"Research article","title":"The Diversity and Spatial Distribution of Birds in a Moderately Developed Urban Habitat of Gulabpura, Rajasthan, India","pub_date":"2015-12-09","year":2015,"authors":"Joshi Ashvini Kumar","journal":"International Research Journal of Environment Sciences","volume_pages":"Vol. 4(12), 82-92","subject":"Observation","institute":"Department of Zoology, M.L.V. Government College, Bhilwara, Rajasthan, INDIA","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":173,"type":"Research article","title":"AVIFAUNA OF THE OUSSUDU LAKE AND ITS ENVIRONS, PUDUCHERRY, INDIA AND CONSERVATION CONCERNS","pub_date":"2013-09-21","year":2013,"authors":"M. MURUGESAN; RACHNA CHANDRA; B. ANJAN KUMAR PRUSTY; P. R. ARUN","journal":"Bird Populations","volume_pages":"12:19-29","subject":"Observation","institute":"Sálim Ali Centre for Ornithology and Natural History (SACON), Anaikatti (PO), Coimbatore – 641108, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":174,"type":"Research article","title":"Biodiversity of the Medir Haor wetland ecosystems of Bangladesh","pub_date":"2021-04-24","year":2021,"authors":"Shourav Dutta; Pinaki Chowdhury; Tusher Kumer Ray; Sanjoy Das; Md. Emdadul Hoque","journal":"International Journal of Fisheries and Aquatic Studies","volume_pages":"9(3): 45-55","subject":"Observation","institute":"Department of Forestry and Environmental Science, Faculty of Biological Science, Rangamati Science and Technology University, Rangamati, Bangladesh","country":"Bangladesh","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":175,"type":"Research article","title":"A BIODIVERSITY HUB: SANDI BIRD SANCTUARY, HARDOI, UTTAR PRADESH, INDIA","pub_date":"2015-04-18","year":2015,"authors":"Adesh Kumar; Amita Kanaujia; Sonika Kushwaha; Akhilesh Kumar","journal":"International Journal of Applied Biology and Pharmaceutical Technology","volume_pages":"Volume-6, Issue-2","subject":"Observation","institute":"Biodiversity & Wildlife Conservation Lab, Department of Zoology, University of Lucknow, Lucknow, Uttar Pradesh, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":176,"type":"Research article","title":"BIRDS OF KERALA AGRICULTURAL UNIVERSITY CAMPUS, THRISSUR","pub_date":null,"year":null,"authors":"P.O. Nameer; R. Resmi Nair; K.R. Anoop; Smitha G Nair; R. Lekshm","journal":"ZOOS' PRINT JOURNAL","volume_pages":"15(4): 243-246","subject":"Observation","institute":"College of Forestry, Kerala Agricultural University, Kerala Agricultural University P.O., Thrissur, Kerala 680656, India..","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":177,"type":"Research article","title":"Diversity and conservation status of avifauna in western Navsari, South Gujarat - 10 years of observations","pub_date":"2022-07-20","year":2022,"authors":"Minal Patel; Priyank Kapdi; Neel Tandel; Jay Desai; Zankhna Patel","journal":"Species","volume_pages":"23(72), 2022","subject":"Observation","institute":"College of Forestry, Navsari Agricultural University, Navsari, Gujarat, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":true},{"id":178,"type":"Research article","title":"DIVERSITY OF AVIFAUNA IN SHER-E-BANGLA AGRICULTURAL UNIVERSITY CAMPUS","pub_date":"2014-08-19","year":2014,"authors":"S.C. Shovon; Md. Shariful Islam; Jubayer-Al-Mahmud; Md. Shah Newaz Chowdhury; Md. Nazmul Alam","journal":"INTERNATIONAL JOURNAL OF BUSINESS, SOCIAL AND SCIENTIFIC RESEARCH","volume_pages":"2, Volume: 2, Issue: 1, Page: 58-63","subject":"Observation","institute":"Department of Agricultural Botany Sher-e-Bangla Agricultural University , Dhaka-1207","country":"Bangladesh","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":179,"type":"Research article","title":"REANALYSIS OF THE IMPACT OF URBANIZATION ON BIRD SPECIES DIVERSITY AROUND AMRAVATI","pub_date":"2020-09-04","year":2020,"authors":"Shashibhushan B. Mahadik; Dadasaheb G. Godase; Supriya M. Patil; Srushti V. Pisal; Prakash S. Jadhav","journal":"Int. J. Agricult. Stat. Sci.","volume_pages":"Vol. 16, No. 2, pp. 509-517","subject":"Observation","institute":"Department of Statistics, Shivaji University, Kolhapur - 416 004, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":180,"type":"Research article","title":"WISE USE: A TRADITIONAL APPROACH TO UTILIZE THE RESOURCES OF RANGLA WETLAND COMPLEX","pub_date":null,"year":1998,"authors":"KASHIF M. SHEIKH; ALEEM A. KHAN; M. SAJID NADEEM","journal":"Pak. J. Ornith.","volume_pages":"2(1-2)","subject":"Observation","institute":"Department of Biological Sciences, Quaid-i-Azam University, Islamabad, Pakistan","country":"Pakistan","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":181,"type":"Research article","title":"AVIFAUNAL DIVERSITY OF ANANTAPURAMU (SEMI-ARID) DISTRICT, ANDHRA PRADESH, INDIA","pub_date":"2018-06-05","year":2018,"authors":"V.V. Bala Subramanyam","journal":"International Journal of Zoology and Applied Biosciences","volume_pages":"Volume 3, Issue 2, pp: 426-439","subject":"Observation","institute":"Department of Zoology, Sri Krishnadevaraya University, Anantapuramu, Andhra Pradesh, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":182,"type":"Research article","title":"Sri Lanka","pub_date":null,"year":2005,"authors":"Govind Kumar","journal":"Indian Birds","volume_pages":"2 (6): 160–166","subject":"Observation","institute":null,"country":"Sri Lanka","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":183,"type":"Review paper","title":"A review of the faunal diversity of the Fergusson College campus, Pune, India","pub_date":"2016-10-01","year":2016,"authors":"A.N. Nerlekar; A.M. Warudkar; G.G. Gowande; S.S. Salve; A. Raut","journal":"ZOO’s PRINT","volume_pages":"Volume XXXI","subject":"Observation","institute":"Department of Botany, 2-4Graduate student, Department of Zoology, 6Graduate student, Department of Microbiology, 7Head, Department of Geography, Fergusson College, Pune","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":184,"type":"Research article","title":"Avifauna and Comparative Study of Threatened Birds at Urban Wetlands of Kolhapur, Maharashtra, India","pub_date":"2017-12-31","year":2017,"authors":"Patil Nachiket Suryakant","journal":"Int. J. of Life Sciences","volume_pages":"Vol. 5 (4): 649-660","subject":"Observation","institute":"Department of Environment Science, Shivaji University, Kolhapur-416 004, Maharashtra, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":185,"type":"Research article","title":"An annotated checklist of bird diversity of Kheralu, Mehsana, Gujarat","pub_date":"2022-02-15","year":2022,"authors":"Sarthak V. Chaudhary; Pratik G. Desai; Nishith A. Dharaiya","journal":"Species","volume_pages":"23(71), 2022","subject":"Observation","institute":"Department of Life sciences, HNG University, Patan-384265 (Gujarat) India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":true},{"id":186,"type":"Research article","title":"avian diversity in the naliya Grassland, abdasa Taluka, Kachchh, india","pub_date":"2012-03-26","year":2012,"authors":"Sandeep B. munjpara; indra R. Gadhvi","journal":"Journal of Threatened Taxa","volume_pages":"4(3): 2454–2463","subject":"Observation","institute":"Department of Marine Sciences, Bhavnagar University, Bhavnagar, Gujarat 364001 India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":187,"type":"Research article","title":"Checklist of Birds around Puthanampatti Lake in Tiruchirappalli District, Tamil Nadu","pub_date":null,"year":2019,"authors":"T. Siva; P. Neelanarayanan","journal":"SACON ENVIS Newsletter - Sarovar Saurabh","volume_pages":"Vol.15(2),","subject":"Observation","institute":null,"country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":188,"type":"Research article","title":"Impact assessment of avifauna from the selected lakes around Adani thermal power station in Gondia district, MS, India","pub_date":null,"year":2017,"authors":"Puri SD; Virani RS","journal":"Int. J. of Life Sciences","volume_pages":"Special Issue, A8","subject":"Observation","institute":"Department of Zoology, Bhawabhuti Mahavidyalaya, Amgaon, Dist. Gondia. MS, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":189,"type":"Research article","title":"Diversity of Birds in Bharatpur Metropolitan City, Chitwan, Nepal","pub_date":null,"year":2018,"authors":"Budhan Chaudhary","journal":"Vibek","volume_pages":"Volume: 11, 2018; p 36-49","subject":"Observation","institute":"Department of Zoology, Birendra Multiple Campus, Tribhuvan University, Nepal","country":"Nepal","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":190,"type":"Research article","title":"BIODIVERSITY IN AND AROUND PIMPALGAON JOGADAM, JUNNAR, PUNE DISTRICT: WITH SPECIAL REFERENCE TO AVIFAUNA, HERPATOFAUNA AND MAMMALIAN DIVERSITY","pub_date":"2019-03-12","year":2019,"authors":"Pritesh Ghadigaonkar; Akshay Pandirka; Pradnya Bandekar; Aakash Kuwar; Rovhin Todankar","journal":"Proc UGC Sponsored National Seminar on “Wetlands-Present Status, Ecology & Conservation”","volume_pages":null,"subject":"Observation","institute":"Department of Zoology, VIVA college of Arts Commerce and Science, Virar 401303 2 28, PanditNiwas, S K bole road, Dadar west, Mumbai 400028","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":191,"type":"Research article","title":"Avian fauna of Pong Dam Wetland-a Ramsar site","pub_date":null,"year":2016,"authors":"R. Jindal; H. Singh; C. Sharma","journal":"INTERNATIONAL JOURNAL OF ENVIRONMENTAL SCIENCES","volume_pages":"Volume 3, No 6, 2013","subject":"Observation","institute":"Department of Zoology, Panjab University, Chandigarh","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":192,"type":"Research article","title":"A checklist of the birds of India","pub_date":"2016-07-14","year":2016,"authors":"Praveen J; Rajah Jayapal; Aasheesh Pittie","journal":"Indian BIRDS","volume_pages":"Vol. 11 Nos. 5 & 6","subject":"Observation","institute":"Sálim Ali Centre for Ornithology and Natural History, Anaikatty (Post), Coimbatore 641108, Tamil Nadu, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":193,"type":"Research article","title":"Avian diversity of sitamata wildlife sanctuary, Rajasthan, india","pub_date":null,"year":2011,"authors":"MOHAMMED YASEEN; RASHMI SAXENA; VIJAY KUMAR KOL; SUNIL DUBEY; RAZA TEHSIN","journal":"GEOBIOS An International Quarterly Journal of Life Sciences","volume_pages":"Vol. 38, No. 4 257-264, 2011","subject":"Observation","institute":"Department of Zoology, B.N.P.G. College, Udaipur-313001, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":194,"type":"News note","title":"GLIMPSES OF BIODIVERSITY OF SACON CAMPUS","pub_date":null,"year":2014,"authors":null,"journal":"SACON NEWS","volume_pages":"Vol.11 (2&3)","subject":"Observation","institute":"SACON CAMPUS","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":195,"type":"Research article","title":"Diversity and status of birds in Bonai Forest Division, Odisha, India","pub_date":null,"year":2017,"authors":"H. S. PALEI; S. DEBATA; PRATYUSH P. MOHAPATRA; A. K. MISHRA","journal":"e-planet","volume_pages":"15 (2): 166-177","subject":"Observation","institute":"Department of Zoology, North Orissa University, Takatpur, Baripada, Odisha, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":196,"type":"Book","title":"Nightjars A Guide to Nightjars and Related Birds","pub_date":"2010-08-13","year":2010,"authors":"Nigel Cleere","journal":"Bloomsbury Publishing","volume_pages":null,"subject":"Unclassified","institute":null,"country":null,"place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":197,"type":"Research article","title":"The birds of Okhla barrage bird sanctuary, Delhi, India","pub_date":null,"year":2003,"authors":"ABDUL JAMIL","journal":"FORKTAIL","volume_pages":"19 (2003): 39-50","subject":"Observation","institute":"Okhla barrage bird sanctuary","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":198,"type":"Research article","title":"A PRELIMINARY REPORT ON THE VERTEBRATE DIVERSITY OF THE KALIVELI WATERSHED REGION","pub_date":null,"year":2007,"authors":"Mario Eric Ramanujam; R. Anbarasan","journal":"ZOOS' PRINT JOURNAL","volume_pages":"22(3): 2608-2616","subject":"Observation","institute":"Pitchandikulam Bioresource Centre, Auroville, Pondicherry 605101, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":199,"type":"Research article","title":"Avifauna in and around Nagpur city of Maharashtra - an annotated, authentic, contemporary checklist","pub_date":null,"year":2009,"authors":"Raju Kasambe; Tarique Sani","journal":null,"volume_pages":null,"subject":"Observation","institute":"G-1, Laxmi Apartments, 64, Vidya Vihar Colony, Pratap Nagar, Nagpur-440022, Maharashtra.","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":200,"type":"Research article","title":"EFFECTS OF ENVIRONMENTAL POLLUTANTS ON AQUATIC VERTEBRATE BIODIVERSITY AND INVENTORY OF HUB DAM: RAMSAR SITE","pub_date":null,"year":2012,"authors":"M Zaheer Khan; Abeda Begum; Syed Ali Ghalib; Abdur Razzaq Khan; Saima Siddiqui","journal":"Canadian Journal of Pure and Applied Sciences","volume_pages":"Vol. 6, No. 2, pp. 1913-1935","subject":"Observation","institute":"Department of Zoology, Faculty of Science, University of Karachi, Karachi-75270","country":"Pakistan","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":201,"type":"News note","title":"The Birds of Gujarat: Status and Distribution","pub_date":null,"year":2016,"authors":"Prasad Ganpule","journal":"Flamingo Newsletter of BCSG","volume_pages":"Vol. VIII 3 - XII 4","subject":"Observation","institute":"Parshuram Pottery Works Co. Ltd., Nazarbaug station, Morbi-363642","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":true},{"id":202,"type":"Book","title":"AVES (BIRDS)","pub_date":null,"year":null,"authors":"ANIL KUMAR; TEJDEEP KAUR KLER; MUHAMED JAFER PALOT","journal":null,"volume_pages":null,"subject":"Observation","institute":"Northern Regional Centre, Zoological Survey of India, 218, Kaulagarh Road, Dehradun- 248195 Department of Zoology, Punjab Agricultural University, Ludhiana-141004, Punjab","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":203,"type":"Research article","title":"Mammalian and avian diversity of the nallamala hills andhra pradesh","pub_date":"2001-11-24","year":2001,"authors":"C. Srinivasulu; V. Nagulu","journal":"Z00S' PRINT JOURNAL","volume_pages":"17(1): 675-684","subject":"Observation","institute":"Wildlife Biology Section, Department of Zoology, Osmania University, Hyderabad, Andhra Pradesh 500007, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":204,"type":"Research article","title":"Tripreport to Goa, India, Oct 6th - Nov 14th and Jan 6th - Feb 14th","pub_date":null,"year":null,"authors":"Jörgen Bernsmo; Annica Nilsson","journal":null,"volume_pages":null,"subject":"Observation","institute":"Uppsalagatan 11, 214 29 Malmö, Sweden","country":"Sweden","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":205,"type":"Research article","title":"Casualties among birds along a selected road in Wiltshire","pub_date":"1963-10-04","year":1963,"authors":"A. A. Dunthorn; F. P. Errington","journal":"Bird Study","volume_pages":"11:3, 168-182,","subject":"Mortality","institute":null,"country":"United Kingdom","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":206,"type":"Research article","title":"MAMMALIAN AND AVIAN FAUNA OF SOME SELECTED AREAS OF PURULIA DISTRICT, WEST BENGAL","pub_date":null,"year":2008,"authors":"K. K. BISWAS; P. C. SAREN; DIPANKAR BASU","journal":"zool. Surv. India","volume_pages":"l08(Part-3) : 59-76, 2008","subject":"Observation","institute":"Zoological Survey of India, M-Block, New Alipore, Kolkata-700 053","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":207,"type":"Book","title":"Kalivelli Wetlands","pub_date":null,"year":null,"authors":"Gopinath S; Srinivas V","journal":"Foundation for Ecological Research, Advocacy and Learning","volume_pages":null,"subject":"Observation","institute":null,"country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":208,"type":"Research article","title":"BIRDS OF MEGHAMALAI LANDSCAPE, SOUTHERN WESTERN GHATS, INDIA","pub_date":"2006-11-26","year":2006,"authors":"Santhanakrishnan Babu; Subramanian Bhupathy","journal":"Journal of Threatened Taxa","volume_pages":"5 (15); 4962/4972","subject":"Observation","institute":"Wildife Information Liaison Development Society, 96 Kumudham Nagar, Vilankurichi Road, Coimbatore, Tamil Nadu 641035, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":209,"type":"Research article","title":"Birds of lower Palni Hills, Western Ghats, Tamil Nadu","pub_date":"2012-11-26","year":2012,"authors":"Tharmalingam Ramesh; J. Peter Prem Chakravarth; S. Balachandran; Riddhika Kalle","journal":"Journal of Threatened Taxa","volume_pages":"4(14): 3269–3283","subject":"Observation","institute":"Wildlife Institute of India, Chandrabani, P.O. Box 18, Dehra Dun, Uttarakhand 248001, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":210,"type":"Research article","title":"Habitat preference and resource utilization of avifauna in Kuldiha Wildlife Sanctuary, Odisha, India: Role of eco-ethological gradients","pub_date":"2018-07-05","year":2018,"authors":"Srinjana Ghosh; Santu Paria; Prakash Chandra Mardaraj; Susanta Kumar Chakraborty","journal":"World Scientific News","volume_pages":"103 (2018) 32-64","subject":"Observation","institute":"e Department of Zoology, Bethune College, Govt. of West Bengal, 181, Bidhan Sarani, Kolkata, West Bengal, India","country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":211,"type":"Research article","title":"Checklist of Birds of Kudal, Sindhudurg, Maharashtra","pub_date":"2018-06-30","year":2018,"authors":"Sachin Chorge; Manasi Karangutkar; Anjaney Karangutkar","journal":"Ela Journal of Forestry and Wildlife","volume_pages":"Vol. 7(2): 462-469","subject":"Observation","institute":null,"country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":212,"type":"Research article","title":"Birds of Chamundi Hills Reserve Forest, Mysore, Karnataka","pub_date":null,"year":2007,"authors":"Deapesh Misra; A. Shivaprakash; K. B. Sadananda","journal":"Indian Birds","volume_pages":"Vol. 3 No. 3","subject":"Observation","institute":null,"country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":213,"type":"Research article","title":"Avifauna of a waste disposal site","pub_date":null,"year":2007,"authors":"Vijay B. Tuljapurkar; Vinod Bhagwat","journal":"Indian Birds","volume_pages":"Vol. 3 No. 3","subject":"Observation","institute":null,"country":"India","place":null,"latitude":null,"longitude":null,"is_gujarat":false},{"id":214,"type":"Research article","title":"Further significant extensions of migrant distribution and breeding and wintering ranges in Iran for over sixty species","pub_date":null,"year":2006,"authors":"MOHAMMAD E. SEHHATISABET; SEYED BABAK MUSAVI; PARVIZ BAKHTIARI; DARYOUSH MOGHADDAS; NADER HAMIDI","journal":"Sandgrouse","volume_pages":"28 (2): 146–155","subject":"Breeding biology","institute":"` Ornithology Unit, Wildlife & Aquatic Organisms Bureau, Department of the Environment (DOE), Tehran, Iran.","country":"Iran","place":null,"latitude":null,"longitude":null,"is_gujarat":false}];
+</script>
+<script>// One data layer with two engines:
+//   live  - Supabase (accounts, approval, records, uploads). Access rules are enforced by the database.
+//   demo  - localStorage in this browser, so the site can be tried before Supabase is connected.
+(function () {
+  const cfg = window.PORTAL;
+  const live = !!(cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY && window.supabase);
+  const sb = live ? window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY) : null;
+
+  const ok = (res) => { if (res.error) throw new Error(res.error.message); return res.data; };
+  const fileExt = (f) => (f.name.split(".").pop() || "bin").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const randomName = (f) => Date.now() + "-" + Math.random().toString(36).slice(2, 10) + "." + fileExt(f);
+
+  // ---------------- Live engine ----------------
+  const Live = {
+    mode: "live",
+    async getUser() {
+      const { data } = await sb.auth.getSession();
+      const u = data.session && data.session.user;
+      if (!u) return null;
+      const p = await sb.from("profiles").select("full_name, role").eq("id", u.id).maybeSingle();
+      return { id: u.id, email: u.email, full_name: (p.data && p.data.full_name) || "", role: (p.data && p.data.role) || "user" };
+    },
+    async signUp({ email, password, full_name, affiliation, purpose }) {
+      const data = ok(await sb.auth.signUp({
+        email, password,
+        options: { data: { full_name, affiliation, purpose }, emailRedirectTo: location.href.split("#")[0] }
+      }));
+      return { needsEmailConfirm: !data.session };
+    },
+    async signIn(email, password) { ok(await sb.auth.signInWithPassword({ email, password })); },
+    async signOut() { await sb.auth.signOut(); },
+    async resetPassword(email) {
+      ok(await sb.auth.resetPasswordForEmail(email, { redirectTo: location.href.split("#")[0] }));
+    },
+    async myRequest() {
+      const u = await this.getUser(); if (!u) return null;
+      const rows = ok(await sb.from("access_requests").select("*").eq("user_id", u.id).order("created_at", { ascending: false }).limit(1));
+      return rows[0] || null;
+    },
+    async requestAgain({ affiliation, purpose }) {
+      const u = await this.getUser();
+      ok(await sb.from("access_requests").insert({ user_id: u.id, full_name: u.full_name, email: u.email, affiliation, purpose }));
+    },
+    async getStats() { return ok(await sb.rpc("portal_stats")); },
+    async getRecords() { return ok(await sb.from("records").select("*").order("year", { ascending: false, nullsFirst: false })); },
+    async submitObservation(row, file) {
+      if (file) {
+        const path = randomName(file);
+        ok(await sb.storage.from("submissions").upload(path, file, { contentType: file.type }));
+        row.photo_path = path;
+      }
+      ok(await sb.from("submissions").insert(row));
+    },
+    async listMaterials() { return ok(await sb.from("materials").select("*").order("created_at", { ascending: false })); },
+
+    // Admin
+    async listRequests() { return ok(await sb.from("access_requests").select("*").order("created_at", { ascending: false })); },
+    async setRequestStatus(id, status, admin_note) {
+      ok(await sb.from("access_requests").update({ status, admin_note: admin_note || null, reviewed_at: new Date().toISOString() }).eq("id", id));
+    },
+    async listSubmissions() { return ok(await sb.from("submissions").select("*").order("created_at", { ascending: false })); },
+    async setSubmissionStatus(id, status) { ok(await sb.from("submissions").update({ status }).eq("id", id)); },
+    async photoUrl(path) {
+      const d = ok(await sb.storage.from("submissions").createSignedUrl(path, 3600));
+      return d.signedUrl;
+    },
+    async addMaterial({ title, description, kind, language, file, url }) {
+      let file_url = url;
+      if (file) {
+        const path = randomName(file);
+        ok(await sb.storage.from("materials").upload(path, file, { contentType: file.type }));
+        file_url = sb.storage.from("materials").getPublicUrl(path).data.publicUrl;
+      }
+      ok(await sb.from("materials").insert({ title, description, kind, language, file_url }));
+    },
+    async deleteMaterial(id) { ok(await sb.from("materials").delete().eq("id", id)); }
+  };
+
+  // ---------------- Demo engine ----------------
+  const K = "nightjar-demo-";
+  const load = (k, d) => { try { return JSON.parse(STORE.get(K + k)) || d; } catch (e) { return d; } };
+  const save = (k, v) => { try { STORE.set(K + k, JSON.stringify(v)); } catch (e) { /* storage full or blocked */ } };
+  const ADMIN = { id: "admin", email: "admin@demo.local", password: "nightjar", full_name: "Demo admin", role: "admin" };
+  const users = () => [ADMIN].concat(load("users", []));
+  const nextId = (rows) => rows.reduce((m, r) => Math.max(m, r.id), 0) + 1;
+  const asDataUrl = (file) => new Promise((res, rej) => {
+    const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(file);
+  });
+
+  const Demo = {
+    mode: "demo",
+    demoAdmin: { email: ADMIN.email, password: ADMIN.password },
+    async getUser() {
+      const id = load("session", null);
+      const u = users().find((x) => x.id === id);
+      return u ? { id: u.id, email: u.email, full_name: u.full_name, role: u.role } : null;
+    },
+    async signUp({ email, password, full_name, affiliation, purpose }) {
+      email = email.trim().toLowerCase();
+      if (users().some((u) => u.email === email)) throw new Error("An account with this email already exists. Sign in instead.");
+      const list = load("users", []);
+      const u = { id: "u" + Date.now(), email, password, full_name, role: "user" };
+      list.push(u); save("users", list); save("session", u.id);
+      const reqs = load("requests", []);
+      reqs.push({ id: nextId(reqs), user_id: u.id, full_name, email, affiliation, purpose, status: "pending", created_at: new Date().toISOString() });
+      save("requests", reqs);
+      return { needsEmailConfirm: false };
+    },
+    async signIn(email, password) {
+      const u = users().find((x) => x.email === email.trim().toLowerCase() && x.password === password);
+      if (!u) throw new Error("Email or password is not right.");
+      save("session", u.id);
+    },
+    async signOut() { save("session", null); },
+    async resetPassword() { throw new Error("Password reset works once the portal is connected to Supabase."); },
+    async myRequest() {
+      const u = await this.getUser(); if (!u) return null;
+      return load("requests", []).filter((r) => r.user_id === u.id).sort((a, b) => b.id - a.id)[0] || null;
+    },
+    async requestAgain({ affiliation, purpose }) {
+      const u = await this.getUser(); const reqs = load("requests", []);
+      reqs.push({ id: nextId(reqs), user_id: u.id, full_name: u.full_name, email: u.email, affiliation, purpose, status: "pending", created_at: new Date().toISOString() });
+      save("requests", reqs);
+    },
+    async getStats() { return window.DEMO_STATS; },
+    async getRecords() {
+      const u = await this.getUser(); const r = await this.myRequest();
+      if (!u || !(u.role === "admin" || (r && r.status === "approved"))) return [];
+      return window.DEMO_RECORDS.slice();
+    },
+    async submitObservation(row, file) {
+      const subs = load("submissions", []);
+      if (file && file.size < 400000) row.photo_path = await asDataUrl(file);
+      else if (file) row.photo_path = null, row.notes = (row.notes || "") + " [Photo " + file.name + " not kept in demo mode]";
+      subs.push(Object.assign({ id: nextId(subs), status: "new", created_at: new Date().toISOString() }, row));
+      save("submissions", subs);
+    },
+    async listMaterials() { return load("materials", []).slice().reverse(); },
+    async listRequests() { return load("requests", []).slice().reverse(); },
+    async setRequestStatus(id, status, admin_note) {
+      const reqs = load("requests", []); const r = reqs.find((x) => x.id === id);
+      if (r) { r.status = status; r.admin_note = admin_note || null; r.reviewed_at = new Date().toISOString(); }
+      save("requests", reqs);
+    },
+    async listSubmissions() { return load("submissions", []).slice().reverse(); },
+    async setSubmissionStatus(id, status) {
+      const subs = load("submissions", []); const s = subs.find((x) => x.id === id);
+      if (s) s.status = status; save("submissions", subs);
+    },
+    async photoUrl(path) { return path; },
+    async addMaterial({ title, description, kind, language, file, url }) {
+      const list = load("materials", []);
+      let file_url = url;
+      if (file) {
+        if (file.size > 400000) throw new Error("Demo mode keeps files under 400 KB. Paste a link instead, or connect Supabase.");
+        file_url = await asDataUrl(file);
+      }
+      list.push({ id: nextId(list), title, description, kind, language, file_url, created_at: new Date().toISOString() });
+      save("materials", list);
+    },
+    async deleteMaterial(id) { save("materials", load("materials", []).filter((m) => m.id !== id)); }
+  };
+
+  window.DB = live ? Live : Demo;
+})();
+</script>
+<script>// Species list used on the home page and in the observation form.
+// Ranges are short summaries; check them against a current field guide before publishing.
+window.SPECIES = [
+  ["Indian Nightjar", "Caprimulgus asiaticus", "Open scrub, fallow land and cultivation across most of the subcontinent."],
+  ["Savanna Nightjar", "Caprimulgus affinis", "Rocky, grassy and open country, often on bare stony ground."],
+  ["Sykes's Nightjar", "Caprimulgus mahrattensis", "Arid and semi-desert country of the north-west, including Gujarat."],
+  ["Jungle Nightjar", "Caprimulgus indicus", "Forest and wooded hills of peninsular India and Sri Lanka."],
+  ["Jerdon's Nightjar", "Caprimulgus atripennis", "Forest edge and wooded country of southern India and Sri Lanka."],
+  ["Large-tailed Nightjar", "Caprimulgus macrurus", "Forest edge from the Himalayan foothills through north-east and eastern India."],
+  ["Grey Nightjar", "Caprimulgus jotaka", "Himalayan and north-eastern forests; moves lower in winter."],
+  ["European Nightjar", "Caprimulgus europaeus", "A passage migrant through the north-west on its way to and from Africa."],
+  ["Great Eared Nightjar", "Lyncornis macrotis", "Evergreen forest of the Western Ghats and north-east India."],
+  ["Andaman Nightjar", "Caprimulgus andamanicus", "Found only on the Andaman Islands."]
+];
+</script>
+<script>// Search hints: a dropdown under a search box that narrows as the person types.
+// attachSuggest(input, source, onPick)
+//   source(query) -> array of { label, kind, note?, href? }   (already filtered and ordered)
+//   onPick(item)  -> what to do when a hint is chosen
+(function () {
+  const reEsc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const wordsOf = (q) => q.toLowerCase().split(/\s+/).filter(Boolean);
+
+  // Keep the items that contain every typed word; best matches first.
+  window.rankHints = function (query, items, limit) {
+    const words = wordsOf(query);
+    if (!words.length) return [];
+    const q = words.join(" ");
+    const out = [];
+    for (const it of items) {
+      const l = it.label.toLowerCase();
+      if (!words.every((w) => l.includes(w))) continue;
+      const score = l.startsWith(q) ? 0 : words.every((w) => new RegExp("(^|[^a-z0-9])" + reEsc(w)).test(l)) ? 1 : 2;
+      out.push({ it, score });
+    }
+    out.sort((a, b) => a.score - b.score || (a.it.rank || 0) - (b.it.rank || 0) || a.it.label.length - b.it.label.length);
+    return out.slice(0, limit || 8).map((x) => x.it);
+  };
+
+  // Escape the label and wrap the typed words in <mark>.
+  function highlight(label, query) {
+    const words = wordsOf(query).map(reEsc);
+    if (!words.length) return esc(label);
+    return label.split(new RegExp("(" + words.join("|") + ")", "ig"))
+      .map((part, i) => (i % 2 ? "<mark>" + esc(part) + "</mark>" : esc(part))).join("");
+  }
+
+  let uid = 0;
+  window.attachSuggest = function (input, source, onPick) {
+    const id = "hints-" + (++uid);
+    const wrap = document.createElement("div");
+    wrap.className = "suggest";
+    input.parentNode.insertBefore(wrap, input);
+    wrap.appendChild(input);
+    const list = document.createElement("ul");
+    list.id = id; list.className = "hints hidden"; list.setAttribute("role", "listbox");
+    list.setAttribute("aria-label", "Search hints");
+    wrap.appendChild(list);
+    input.setAttribute("role", "combobox");
+    input.setAttribute("aria-autocomplete", "list");
+    input.setAttribute("aria-controls", id);
+    input.setAttribute("aria-expanded", "false");
+    input.setAttribute("autocomplete", "off");
+
+    let items = [], active = -1, silent = false;
+
+    const close = () => { list.classList.add("hidden"); input.setAttribute("aria-expanded", "false"); input.removeAttribute("aria-activedescendant"); active = -1; };
+    const mark = () => {
+      list.querySelectorAll("li").forEach((li, i) => li.setAttribute("aria-selected", i === active));
+      if (active >= 0) { input.setAttribute("aria-activedescendant", id + "-" + active); list.children[active].scrollIntoView({ block: "nearest" }); }
+      else input.removeAttribute("aria-activedescendant");
+    };
+    const open = () => {
+      const q = input.value.trim();
+      items = q ? source(q) : [];
+      if (!items.length) { close(); return; }
+      list.innerHTML = items.map((it, i) =>
+        '<li role="option" id="' + id + "-" + i + '" data-i="' + i + '" aria-selected="false">' +
+        '<span class="h-label">' + highlight(it.label, q) + "</span>" +
+        '<span class="h-kind">' + esc(it.kind) + (it.note ? ", " + esc(it.note) : "") + "</span></li>").join("");
+      active = -1;
+      list.classList.remove("hidden"); input.setAttribute("aria-expanded", "true");
+    };
+    const pick = (i) => {
+      const it = items[i]; if (!it) return;
+      close();
+      silent = true; onPick(it); silent = false;
+    };
+
+    input.addEventListener("input", () => { if (!silent) open(); });
+    input.addEventListener("focus", () => { if (input.value.trim()) open(); });
+    input.addEventListener("blur", () => setTimeout(close, 120));
+    input.addEventListener("keydown", (e) => {
+      const isOpen = !list.classList.contains("hidden");
+      if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+        if (!isOpen) { open(); return; }
+        e.preventDefault();
+        const n = items.length;
+        active = e.key === "ArrowDown" ? (active + 1) % n : (active <= 0 ? n - 1 : active - 1);
+        mark();
+      } else if (e.key === "Enter" && isOpen && active >= 0) { e.preventDefault(); pick(active); }
+      else if (e.key === "Escape" && isOpen) { e.preventDefault(); close(); }
+    });
+    // mousedown (not click) so the choice lands before the input loses focus
+    list.addEventListener("mousedown", (e) => {
+      const li = e.target.closest("li"); if (!li) return;
+      e.preventDefault(); pick(Number(li.dataset.i));
+    });
+  };
+})();
+</script>
+<script>
+const APP = function () {// Shared page furniture: header, footer, demo notice, small helpers.
+(function () {
+  const cfg = window.PORTAL;
+
+  window.esc = (v) => String(v == null ? "" : v).replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  window.$ = (sel, root) => (root || document).querySelector(sel);
+  window.fmtDate = (iso) => iso ? new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "";
+  // Only allow web links and inline demo files to be used as a link target.
+  window.safeUrl = (u) => /^(https?:|data:(image|application\/pdf))/i.test(u || "") ? u : "#";
+
+  window.toast = (msg, bad) => {
+    let t = $("#toast");
+    if (!t) { t = document.createElement("div"); t.id = "toast"; t.setAttribute("role", "status"); document.body.appendChild(t); }
+    t.textContent = msg; t.className = bad ? "show bad" : "show";
+    clearTimeout(t._h); t._h = setTimeout(() => (t.className = ""), 4500);
+  };
+
+  // Wraps a form submit: disables the button while working, shows errors as a toast.
+  window.onSubmit = (form, handler) => form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn = form.querySelector("button[type=submit]");
+    const label = btn && btn.textContent;
+    if (btn) { btn.disabled = true; btn.textContent = "Working…"; }
+    try { await handler(Object.fromEntries(new FormData(form).entries()), form); }
+    catch (err) { toast(err.message || "Something went wrong. Try again.", true); }
+    finally { if (btn) { btn.disabled = false; btn.textContent = label; } }
+  });
+
+  const links = [
+    ["#index", "Home"],
+    ["#database", "Search the data"],
+    ["#submit", "Send an observation"],
+    ["#awareness", "Awareness material"]
+  ];
+  const here = "#" + window.PAGE;
+
+  async function chrome() {
+    const header = document.createElement("header");
+    header.className = "site-header";
+    header.innerHTML =
+      '<a class="skip" href="#main">Skip to content</a>' +
+      '<div class="wrap bar">' +
+        '<a class="brand" href="#index"><span class="eye" aria-hidden="true"></span>' + esc(cfg.SITE_NAME) + "</a>" +
+        '<button class="menu-btn" aria-expanded="false" aria-controls="nav">Menu</button>' +
+        '<nav id="nav" aria-label="Main">' +
+          links.map(([h, t]) => '<a href="' + h + '"' + (h === here ? ' aria-current="page"' : "") + ">" + t + "</a>").join("") +
+          '<span id="nav-user"></span>' +
+        "</nav>" +
+      "</div>";
+    document.body.prepend(header);
+    const btn = $(".menu-btn", header), nav = $("#nav", header);
+    btn.addEventListener("click", () => {
+      const open = nav.classList.toggle("open"); btn.setAttribute("aria-expanded", open);
+    });
+
+    if (DB.mode === "demo") {
+      const n = document.createElement("div");
+      n.className = "demo-note";
+      n.innerHTML = '<div class="wrap">Local mode: all 209 records are stored inside this file. Requests and observations are saved only in this browser. ' +
+        "Admin sign-in for testing is <b>" + DB.demoAdmin.email + "</b> with password <b>" + DB.demoAdmin.password + "</b>.</div>";
+      header.after(n);
+    }
+
+    const footer = document.createElement("footer");
+    footer.className = "site-footer";
+    footer.innerHTML =
+      '<div class="wrap foot">' +
+        "<div><strong>" + esc(cfg.SITE_NAME) + "</strong><p>An open reference on the nightjars (Caprimulgidae) of Gujarat and the Indian subcontinent.</p></div>" +
+        "<div><p>Supported by the " + esc(cfg.GRANT.name) + ", a collaborative initiative of " + esc(cfg.GRANT.funders) + ".</p></div>" +
+        '<div><p>Questions or corrections: <a href="mailto:' + esc(cfg.CONTACT_EMAIL) + '">' + esc(cfg.CONTACT_EMAIL) + "</a></p>" +
+        '<p><a href="#account">Account</a></p></div>' +
+      "</div>";
+    document.body.appendChild(footer);
+
+    let user = null;
+    try { user = await DB.getUser(); } catch (e) { /* offline or not configured */ }
+    $("#nav-user").innerHTML =
+      (user && user.role === "admin" ? '<a href="#admin"' + (here === "#admin" ? ' aria-current="page"' : "") + ">Admin</a>" : "") +
+      '<a class="nav-cta" href="#account">' + (user ? esc(user.full_name || user.email) : "Sign in") + "</a>";
+    return user;
+  }
+
+  // Pages await this to get the signed-in user (or null) once the header is ready.
+  window.ready = new Promise((resolve) => {
+    const go = () => chrome().then(resolve);
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", go); else go();
+  });
+})();
+};
+const PAGES = {
+  index: function () {(async function () {
+  const g = PORTAL.GRANT;
+  $("#g-name").textContent = g.name;
+  $("#g-funders").textContent = g.funders;
+  $("#g-date").textContent = g.announced;
+  $("#g-project").textContent = g.project;
+  $("#g-link").href = g.link;
+
+  $("#species").innerHTML = SPECIES.map(([n, s, d]) =>
+    "<li><b>" + esc(n) + "</b><i>" + esc(s) + "</i><span>" + esc(d) + "</span></li>").join("");
+
+  await ready;
+  // Search hints. Built only from public content: species, subject names, and pages of this site.
+  const hints = SPECIES.map(([n, s]) => ({ label: n, kind: "Species", note: s, rank: 1 }))
+    .concat(SPECIES.map(([n, s]) => ({ label: s, kind: "Species", note: n, rank: 2 })))
+    .concat([
+      { label: "Search the data", kind: "Page", href: "#database", rank: 3 },
+      { label: "Request access to the data", kind: "Page", href: "#account", rank: 3 },
+      { label: "Send an observation, sighting or photo", kind: "Page", href: "#submit", rank: 3 },
+      { label: "Awareness material: posters, leaflets and guides", kind: "Page", href: "#awareness", rank: 3 },
+      { label: "Microgrant from Global Nightjar Network and Kshitij Foundation", kind: "On this page", anchor: "grant", rank: 3 },
+      { label: "Nightjar species of the Indian subcontinent", kind: "On this page", anchor: "species-list", rank: 3 }
+    ]);
+  attachSuggest($("#hq"), (q) => rankHints(q, hints, 8), (it) => {
+    if (it.anchor) { $("#hq").value = ""; document.getElementById(it.anchor).scrollIntoView(); }
+    else location.href = it.href || "#database?q=" + encodeURIComponent(it.label);
+  });
+  try {
+    const s = await DB.getStats();
+    if (!s || !s.total) throw new Error("no stats");
+    $("#facts").innerHTML = "<b>" + s.total + "</b> records from <b>" + s.countries + "</b> countries, published between <b>" +
+      s.year_min + "</b> and <b>" + s.year_max + "</b>";
+    Object.entries(s.by_subject).forEach(([k, n]) => { if (k !== "Unclassified") hints.push({ label: k, kind: "Subject", note: n + (n === 1 ? " record" : " records"), rank: 0 }); });
+    hints.push({ label: "Gujarat", kind: "Region", note: s.gujarat + " records", rank: 0 });
+    const rows = Object.entries(s.by_subject).sort((a, b) => b[1] - a[1]);
+    const max = rows[0][1];
+    // Square-root scale so small subjects stay visible next to the largest one.
+    $("#bars").innerHTML = rows.map(([k, n]) =>
+      "<li><span>" + esc(k) + '</span><span class="track"><span class="fill" style="width:' +
+      (Math.sqrt(n / max) * 100).toFixed(1) + '%"></span></span><span class="n">' + n + "</span></li>").join("");
+    $("#bars-note").textContent = s.gujarat + " records are from Gujarat and " + s.mapped +
+      " have map coordinates. Bar lengths are scaled so that small subjects stay visible.";
+  } catch (e) {
+    $("#facts").textContent = "Published records from across the Indian subcontinent";
+    $("#bars").innerHTML = "<li>Record counts appear here once the data is loaded.</li>";
+  }
+})();
+},
+  database: function () {(async function () {
+  const user = await ready;
+  const gate = $("#gate");
+  const PER_PAGE = 25;
+  let all = [], shown = [], page = 1, map = null, layer = null;
+
+  // ---------- Who may see the data ----------
+  if (!user) {
+    let line = "";
+    try { const s = await DB.getStats(); if (s && s.total) line = "<p>The index holds <b>" + s.total + "</b> records from <b>" + s.countries + "</b> countries, published between " + s.year_min + " and " + s.year_max + ".</p>"; } catch (e) {}
+    gate.innerHTML = "<h2>Access is by request</h2>" + line +
+      "<p>The records are free to use for research, conservation and education. Send a short request and we will review it.</p>" +
+      '<p><a class="btn" href="#account">Request access</a> <a class="btn ghost" href="#account?signin">Sign in</a></p>';
+    return;
+  }
+  let req = null;
+  try { req = await DB.myRequest(); } catch (e) {}
+  const allowed = user.role === "admin" || (req && req.status === "approved");
+  if (!allowed) {
+    const rejected = req && req.status === "rejected";
+    gate.innerHTML = !req
+      ? '<h2>You have not requested access yet</h2><p>Send a short request and we will review it.</p><p><a class="btn" href="#account">Request access</a></p>'
+      : rejected
+      ? "<h2>Your request was not approved</h2><p>" + (req.admin_note ? "Note from the team: " + esc(req.admin_note) : "You can send a new request with more detail about your work.") + '</p><p><a class="btn" href="#account">Send a new request</a></p>'
+      : "<h2>Your request is waiting for review</h2><p>We received it on " + fmtDate(req && req.created_at) + ". A person on our team reads every request, so this can take a few days. You will be able to search as soon as it is approved.</p>";
+    return;
+  }
+
+  try { all = await DB.getRecords(); }
+  catch (e) { gate.innerHTML = '<div class="notice bad"><p>The records could not be loaded: ' + esc(e.message) + ". Reload the page to try again.</p></div>"; return; }
+  gate.classList.add("hidden");
+  $("#app").classList.remove("hidden");
+
+  // ---------- Filters ----------
+  const fill = (sel, key) => {
+    const counts = {};
+    all.forEach((r) => { if (r[key]) counts[r[key]] = (counts[r[key]] || 0) + 1; });
+    Object.keys(counts).sort((a, b) => counts[b] - counts[a] || a.localeCompare(b)).forEach((v) => {
+      const o = document.createElement("option"); o.value = v; o.textContent = v + " (" + counts[v] + ")"; sel.appendChild(o);
+    });
+  };
+  fill($("#f-subject"), "subject"); fill($("#f-type"), "type"); fill($("#f-country"), "country");
+
+  const q0 = new URLSearchParams(location.hash.split("?")[1] || "").get("q");
+  if (q0) $("#q").value = q0;
+
+  all.forEach((r) => { r._text = [r.title, r.authors, r.journal, r.place, r.institute, r.country, r.subject, r.type, r.year].join(" ").toLowerCase(); });
+
+  // ---------- Search hints ----------
+  // Every distinct subject, country, place, author, journal and title becomes a possible hint.
+  const hints = [], seen = new Set();
+  const addHint = (label, kind, rank) => {
+    label = (label || "").trim();
+    const key = kind + "|" + label.toLowerCase();
+    if (label.length < 2 || seen.has(key)) return;
+    seen.add(key); hints.push({ label, kind, rank });
+  };
+  SPECIES.forEach(([n, s]) => { addHint(n, "Species", 0); addHint(s, "Species", 0); });
+  all.forEach((r) => {
+    addHint(r.subject, "Subject", 0); addHint(r.country, "Country", 1); addHint(r.place, "Place", 2);
+    (r.authors || "").split(";").forEach((a) => addHint(a, "Author", 3));
+    addHint(r.journal, "Journal", 4); addHint(r.title, "Title", 5);
+  });
+  if (all.some((r) => r.is_gujarat)) addHint("Gujarat", "Region", 0);
+  const hitCount = (label) => {
+    const w = label.toLowerCase().split(/\s+/).filter(Boolean);
+    return all.filter((r) => w.every((x) => r._text.includes(x))).length;
+  };
+  attachSuggest($("#q"), (q) =>
+    // Look at more candidates than we show, then keep only hints that really lead to records.
+    rankHints(q, hints, 30).map((h) => { const n = hitCount(h.label); return n ? Object.assign({}, h, { note: n + (n === 1 ? " record" : " records") }) : null; })
+      .filter(Boolean).slice(0, 8),
+    (it) => { $("#q").value = it.label; apply(); });
+
+  function apply() {
+    const words = $("#q").value.toLowerCase().split(/\s+/).filter(Boolean);
+    const sub = $("#f-subject").value, typ = $("#f-type").value, ctry = $("#f-country").value;
+    const y1 = parseInt($("#y1").value, 10), y2 = parseInt($("#y2").value, 10);
+    const guj = $("#f-guj").checked, mapped = $("#f-map").checked;
+    shown = all.filter((r) =>
+      words.every((w) => r._text.includes(w)) &&
+      (!sub || r.subject === sub) && (!typ || r.type === typ) && (!ctry || r.country === ctry) &&
+      (isNaN(y1) || (r.year && r.year >= y1)) && (isNaN(y2) || (r.year && r.year <= y2)) &&
+      (!guj || r.is_gujarat) && (!mapped || r.latitude != null));
+    const s = $("#sort").value;
+    shown.sort(s === "title" ? (a, b) => a.title.localeCompare(b.title)
+      : s === "old" ? (a, b) => (a.year || 9999) - (b.year || 9999)
+      : (a, b) => (b.year || 0) - (a.year || 0));
+    page = 1; render(); drawMap();
+  }
+
+  // ---------- Results ----------
+  const row = (k, v) => v ? "<dt>" + k + "</dt><dd>" + v + "</dd>" : "";
+  function render() {
+    $("#count").textContent = shown.length === all.length ? all.length + " records"
+      : shown.length + " of " + all.length + " records";
+    const list = $("#list");
+    if (!shown.length) {
+      list.innerHTML = '<li class="empty"><h3>No records match these filters</h3><p>Try fewer words, widen the years, or clear the filters.</p></li>';
+      $("#pager").innerHTML = ""; return;
+    }
+    const slice = shown.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+    list.innerHTML = slice.map((r) =>
+      "<li><details><summary>" +
+        '<span class="y">' + (r.year || "n.d.") + "</span>" +
+        '<span><span class="t">' + esc(r.title) + "</span>" +
+        '<span class="a">' + esc(r.authors || "Author not recorded") + "</span>" +
+        '<span class="tags"><span class="tag">' + esc(r.subject) + '</span><span class="tag">' + esc(r.type) + "</span>" +
+        (r.is_gujarat ? '<span class="tag guj">Gujarat</span>' : "") + "</span></span>" +
+      "</summary><dl>" +
+        row("Published in", esc(r.journal)) + row("Volume and pages", esc(r.volume_pages)) +
+        row("Publication date", fmtDate(r.pub_date)) + row("Institute", esc(r.institute)) +
+        row("Country", esc(r.country)) + row("Study location", esc(r.place)) +
+        row("Coordinates", r.latitude != null ? r.latitude + ", " + r.longitude : "") +
+        row("Record number", r.id) +
+      "</dl></details></li>").join("");
+    const pages = Math.ceil(shown.length / PER_PAGE);
+    $("#pager").innerHTML = pages < 2 ? "" :
+      '<button class="btn ghost sm" id="prev"' + (page === 1 ? " disabled" : "") + ">Previous</button>" +
+      "<span>Page " + page + " of " + pages + "</span>" +
+      '<button class="btn ghost sm" id="next"' + (page === pages ? " disabled" : "") + ">Next</button>";
+    const step = (d) => () => { page += d; render(); $("#count").scrollIntoView({ block: "start" }); };
+    if ($("#prev")) { $("#prev").onclick = step(-1); $("#next").onclick = step(1); }
+  }
+
+  // ---------- Map ----------
+  function drawMap() {
+    if (!map) return;
+    layer.clearLayers();
+    const pts = shown.filter((r) => r.latitude != null);
+    pts.forEach((r) => L.circleMarker([r.latitude, r.longitude], { radius: 7, color: "#141a2e", weight: 2, fillColor: "#f2a93b", fillOpacity: .9 })
+      .bindPopup("<b>" + esc(r.title) + "</b><br>" + esc(r.place || "") + (r.year ? " (" + r.year + ")" : "")).addTo(layer));
+    if (pts.length) map.fitBounds(L.latLngBounds(pts.map((r) => [r.latitude, r.longitude])).pad(.2), { maxZoom: 9 });
+  }
+  $("#toggle-map").addEventListener("click", (e) => {
+    if (!window.L) { toast("The map could not be loaded. Check your connection and reload.", true); return; }
+    const hidden = $("#map").classList.toggle("hidden");
+    e.target.textContent = hidden ? "Show map" : "Hide map";
+    e.target.setAttribute("aria-expanded", !hidden);
+    if (hidden) return;
+    if (!map) {
+      map = L.map("map").setView([22.3, 78.5], 4);
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: "&copy; OpenStreetMap contributors" }).addTo(map);
+      layer = L.layerGroup().addTo(map);
+    }
+    map.invalidateSize(); drawMap();
+  });
+
+  // ---------- Export ----------
+  $("#export").addEventListener("click", () => {
+    if (!shown.length) { toast("There are no results to download.", true); return; }
+    const cols = ["id", "type", "title", "authors", "year", "pub_date", "journal", "volume_pages", "subject", "institute", "country", "place", "latitude", "longitude"];
+    const cell = (v) => { v = v == null ? "" : String(v); if (/^[=+\-@]/.test(v)) v = "'" + v; return '"' + v.replace(/"/g, '""') + '"'; };
+    const csv = [cols.join(",")].concat(shown.map((r) => cols.map((c) => cell(r[c])).join(","))).join("\r\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv" }));
+    a.download = "nightjar-records.csv"; a.click(); URL.revokeObjectURL(a.href);
+    toast("Downloaded " + shown.length + " records");
+  });
+
+  let t;
+  $("#filters").addEventListener("input", () => { clearTimeout(t); t = setTimeout(apply, 150); });
+  $("#sort").addEventListener("change", apply);
+  $("#clear").addEventListener("click", () => { $("#filters").reset(); apply(); });
+  apply();
+})();
+},
+  account: function () {(async function () {
+  const user = await ready;
+  const status = $("#status");
+
+  // ---------- Signed out: request access or sign in ----------
+  if (!user) {
+    $("#auth").classList.remove("hidden");
+    const show = (which) => {
+      const up = which === "up";
+      $("#p-up").classList.toggle("hidden", !up); $("#p-in").classList.toggle("hidden", up);
+      $("#tab-up").setAttribute("aria-selected", up); $("#tab-in").setAttribute("aria-selected", !up);
+    };
+    $("#tab-up").onclick = () => show("up");
+    $("#tab-in").onclick = () => show("in");
+    if (location.hash.endsWith("?signin")) show("in");
+
+    onSubmit($("#p-up"), async (d) => {
+      const r = await DB.signUp(d);
+      if (r.needsEmailConfirm) {
+        $("#auth").classList.add("hidden");
+        status.innerHTML = '<div class="notice ok"><h2>Check your email</h2><p>We sent a confirmation link to <b>' + esc(d.email) +
+          "</b>. Open it to confirm your address. Your access request has been recorded and will be reviewed after that.</p></div>";
+      } else BOOT();
+    });
+    onSubmit($("#p-in"), async (d) => { await DB.signIn(d.email, d.password); location.href = "#database"; });
+    $("#forgot").onclick = async (e) => {
+      e.preventDefault();
+      const email = $("#i-email").value.trim();
+      if (!email) { toast("Type your email above first, then choose this again.", true); return; }
+      try { await DB.resetPassword(email); toast("Password reset link sent to " + email); }
+      catch (err) { toast(err.message, true); }
+    };
+    return;
+  }
+
+  // ---------- Signed in: show where the request stands ----------
+  let req = null;
+  try { req = await DB.myRequest(); } catch (e) {}
+  const admin = user.role === "admin";
+  let html = '<div class="panel"><h2>' + esc(user.full_name || user.email) + '</h2><p class="muted">' + esc(user.email) + "</p>";
+
+  if (admin) {
+    html += '<div class="notice ok"><p>You are a portal admin.</p></div><p><a class="btn" href="#admin">Open admin</a> <a class="btn ghost" href="#database">Search the data</a></p>';
+  } else if (req && req.status === "approved") {
+    html += '<div class="notice ok"><p>Your access was approved' + (req.reviewed_at ? " on " + fmtDate(req.reviewed_at) : "") + '.</p></div><p><a class="btn" href="#database">Search the data</a></p>';
+  } else if (req && req.status === "pending") {
+    html += '<div class="notice"><p>Your request from ' + fmtDate(req.created_at) + " is waiting for review. A person on our team reads every request, so this can take a few days.</p></div>";
+  } else {
+    html += (req ? '<div class="notice bad"><p>Your last request was not approved.' + (req.admin_note ? " Note from the team: " + esc(req.admin_note) : "") + "</p></div>" : "") +
+      '<form id="again"><h3>Send a new request</h3>' +
+      '<div class="field"><label for="a-aff">Organisation or institute</label><input id="a-aff" name="affiliation" required></div>' +
+      '<div class="field"><label for="a-purpose">What will you use the data for?</label><textarea id="a-purpose" name="purpose" required minlength="20"></textarea></div>' +
+      '<button class="btn" type="submit">Send access request</button></form>';
+  }
+  html += '<p style="margin:24px 0 0"><button class="btn ghost sm" id="out" type="button">Sign out</button></p></div>';
+  status.innerHTML = html;
+
+  $("#out").onclick = async () => { await DB.signOut(); location.href = "#index"; };
+  if ($("#again")) onSubmit($("#again"), async (d) => { await DB.requestAgain(d); BOOT(); });
+})();
+},
+  submit: function () {(async function () {
+  const user = await ready;
+  const form = $("#obs"), done = $("#done");
+
+  SPECIES.forEach(([name, sci]) => {
+    const o = document.createElement("option"); o.value = name; o.textContent = name + " (" + sci + ")";
+    $("#s-species").appendChild(o);
+  });
+  $("#s-date").max = new Date().toISOString().slice(0, 10);
+  if (user) { $("#s-name").value = user.full_name || ""; $("#s-email").value = user.email || ""; }
+
+  $("#locate").addEventListener("click", () => {
+    if (!navigator.geolocation) { toast("This device cannot share its location. Type the coordinates instead.", true); return; }
+    navigator.geolocation.getCurrentPosition(
+      (p) => { $("#s-lat").value = p.coords.latitude.toFixed(5); $("#s-lng").value = p.coords.longitude.toFixed(5); toast("Location added"); },
+      () => toast("Location was not shared. Type the coordinates or leave them empty.", true),
+      { enableHighAccuracy: true, timeout: 10000 });
+  });
+
+  onSubmit(form, async (d) => {
+    if (d.website) return; // filled only by spam bots
+    const file = $("#s-photo").files[0] || null;
+    if (file && file.size > 10 * 1024 * 1024) throw new Error("That photo is larger than 10 MB. Choose a smaller one.");
+    const num = (v) => (v === "" || v == null ? null : Number(v));
+    if ((d.latitude === "") !== (d.longitude === "")) throw new Error("Give both latitude and longitude, or leave both empty.");
+    await DB.submitObservation({
+      name: d.name.trim(), email: d.email.trim(), kind: d.kind, species: d.species || null,
+      obs_date: d.obs_date || null, place: d.place.trim(),
+      latitude: num(d.latitude), longitude: num(d.longitude), bird_count: num(d.bird_count),
+      notes: d.notes.trim() || null, consent: true
+    }, file);
+    form.reset(); form.classList.add("hidden"); done.classList.remove("hidden"); done.focus();
+  });
+
+  $("#another").addEventListener("click", () => { done.classList.add("hidden"); form.classList.remove("hidden"); $("#s-name").focus(); });
+})();
+},
+  awareness: function () {(async function () {
+  await ready;
+  $("#mail").href = "mailto:" + PORTAL.CONTACT_EMAIL + "?subject=" + encodeURIComponent("Nightjar awareness material");
+  let items = [];
+  try { items = await DB.listMaterials(); } catch (e) {}
+  if (!items.length) { $("#none").classList.remove("hidden"); return; }
+  $("#materials").innerHTML = items.map((m) =>
+    '<li><span class="tag">' + esc(m.kind) + (m.language ? ", " + esc(m.language) : "") + "</span>" +
+    "<h3>" + esc(m.title) + "</h3><p>" + esc(m.description || "") + "</p>" +
+    '<a class="btn sm" href="' + esc(safeUrl(m.file_url)) + '" target="_blank" rel="noopener">Open or download</a></li>').join("");
+})();
+},
+  admin: function () {(async function () {
+  const user = await ready;
+  if (!user || user.role !== "admin") { $("#denied").classList.remove("hidden"); return; }
+  $("#adm").classList.remove("hidden");
+
+  // ---------- Tabs ----------
+  document.querySelectorAll(".tabs [data-tab]").forEach((b) => b.addEventListener("click", () => {
+    document.querySelectorAll(".tabs [data-tab]").forEach((x) => {
+      const on = x === b; x.setAttribute("aria-selected", on);
+      $("#t-" + x.dataset.tab).classList.toggle("hidden", !on);
+    });
+  }));
+
+  const empty = (title, text) => '<li class="empty"><h3>' + title + "</h3><p>" + text + "</p></li>";
+  const guard = async (fn) => { try { await fn(); } catch (e) { toast(e.message, true); } };
+
+  // ---------- Access requests ----------
+  async function loadRequests() {
+    const rows = await DB.listRequests();
+    const order = { pending: 0, approved: 1, rejected: 2 };
+    rows.sort((a, b) => order[a.status] - order[b.status]);
+    const pending = rows.filter((r) => r.status === "pending").length;
+    $("#n-req").textContent = pending ? "(" + pending + " waiting)" : "";
+    $("#requests").innerHTML = rows.length ? rows.map((r) =>
+      '<li data-id="' + r.id + '"><div class="top"><span class="who">' + esc(r.full_name || "No name given") +
+      ' <a class="small" href="mailto:' + esc(r.email) + '">' + esc(r.email) + '</a></span><span class="tag ' + r.status + '">' + r.status + "</span></div>" +
+      '<p class="small muted">' + esc(r.affiliation || "No organisation given") + ", requested " + fmtDate(r.created_at) + "</p>" +
+      "<p>" + esc(r.purpose || "No purpose given") + "</p>" +
+      (r.admin_note ? '<p class="small muted">Your note: ' + esc(r.admin_note) + "</p>" : "") +
+      '<div class="acts">' +
+        (r.status !== "approved" ? '<button class="btn sm" data-act="approved">Approve</button>' : "") +
+        (r.status !== "rejected" ? '<button class="btn sm danger" data-act="rejected">' + (r.status === "approved" ? "Remove access" : "Decline") + "</button>" : "") +
+      "</div></li>").join("") : empty("No access requests yet", "New requests appear here as people sign up.");
+  }
+  $("#requests").addEventListener("click", (e) => guard(async () => {
+    const act = e.target.dataset.act; if (!act) return;
+    const id = Number(e.target.closest("li").dataset.id);
+    let note = "";
+    if (act === "rejected") { note = prompt("Optional note the person will see (leave empty for none):", ""); if (note === null) return; }
+    await DB.setRequestStatus(id, act, note);
+    toast(act === "approved" ? "Request approved" : "Request declined");
+    await loadRequests();
+  }));
+
+  // ---------- Observations ----------
+  let subs = [];
+  async function loadSubs() {
+    subs = await DB.listSubmissions();
+    const fresh = subs.filter((s) => s.status === "new").length;
+    $("#n-sub").textContent = fresh ? "(" + fresh + " new)" : "";
+    $("#subs").innerHTML = subs.length ? subs.map((s) =>
+      '<li data-id="' + s.id + '"><div class="top"><span class="who">' + esc(s.kind) + ": " + esc(s.species || "species not sure") +
+      '</span><span class="tag ' + s.status + '">' + s.status + "</span></div>" +
+      '<p class="small muted">From ' + esc(s.name) + ' <a href="mailto:' + esc(s.email) + '">' + esc(s.email) + "</a>, sent " + fmtDate(s.created_at) + "</p>" +
+      "<p><b>" + esc(s.place || "") + "</b>" + (s.obs_date ? ", seen " + fmtDate(s.obs_date) : "") +
+        (s.bird_count != null ? ", " + s.bird_count + " bird(s)" : "") +
+        (s.latitude != null ? " (" + s.latitude + ", " + s.longitude + ")" : "") + "</p>" +
+      (s.notes ? "<p>" + esc(s.notes) + "</p>" : "") +
+      (s.photo_path ? '<div class="photo"><button class="btn ghost sm" data-photo="1">Show photo</button></div>' : "") +
+      '<div class="acts">' +
+        (s.status !== "accepted" ? '<button class="btn sm" data-act="accepted">Accept</button>' : "") +
+        (s.status !== "rejected" ? '<button class="btn sm danger" data-act="rejected">Reject</button>' : "") +
+      "</div></li>").join("") : empty("Nothing has been sent in yet", "Observations and photos from the public form appear here.");
+  }
+  $("#subs").addEventListener("click", (e) => guard(async () => {
+    const li = e.target.closest("li"); if (!li) return;
+    const id = Number(li.dataset.id);
+    if (e.target.dataset.photo) {
+      const s = subs.find((x) => x.id === id);
+      const url = await DB.photoUrl(s.photo_path);
+      const img = new Image(); img.alt = "Photo sent by " + s.name; img.src = url;
+      e.target.parentNode.replaceChildren(img);
+    } else if (e.target.dataset.act) {
+      await DB.setSubmissionStatus(id, e.target.dataset.act);
+      toast("Marked as " + e.target.dataset.act); await loadSubs();
+    }
+  }));
+  $("#export-subs").addEventListener("click", () => {
+    if (!subs.length) { toast("There is nothing to download yet.", true); return; }
+    const cols = ["id", "created_at", "status", "name", "email", "kind", "species", "obs_date", "place", "latitude", "longitude", "bird_count", "notes"];
+    const cell = (v) => { v = v == null ? "" : String(v); if (/^[=+\-@]/.test(v)) v = "'" + v; return '"' + v.replace(/"/g, '""') + '"'; };
+    const csv = [cols.join(",")].concat(subs.map((r) => cols.map((c) => cell(r[c])).join(","))).join("\r\n");
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob(["﻿" + csv], { type: "text/csv" }));
+    a.download = "nightjar-observations.csv"; a.click(); URL.revokeObjectURL(a.href);
+  });
+
+  // ---------- Awareness material ----------
+  async function loadMats() {
+    const rows = await DB.listMaterials();
+    $("#mats").innerHTML = rows.length ? rows.map((m) =>
+      '<li data-id="' + m.id + '"><div class="top"><span class="who">' + esc(m.title) + '</span><span class="tag">' + esc(m.kind) +
+      (m.language ? ", " + esc(m.language) : "") + "</span></div>" +
+      (m.description ? "<p>" + esc(m.description) + "</p>" : "") +
+      '<div class="acts"><a class="btn ghost sm" href="' + esc(safeUrl(m.file_url)) + '" target="_blank" rel="noopener">Open</a>' +
+      '<button class="btn sm danger" data-del="1">Remove</button></div></li>').join("")
+      : empty("No material published yet", "Use the form above to add your first poster or leaflet.");
+  }
+  onSubmit($("#mat-form"), async (d, form) => {
+    const file = $("#m-file").files[0] || null;
+    if (!file && !d.url) throw new Error("Choose a file or paste a link.");
+    await DB.addMaterial({ title: d.title.trim(), description: d.description.trim(), kind: d.kind, language: d.language, file, url: d.url || null });
+    form.reset(); toast("Material published"); await loadMats();
+  });
+  $("#mats").addEventListener("click", (e) => guard(async () => {
+    if (!e.target.dataset.del) return;
+    if (!confirm("Remove this material from the public page?")) return;
+    await DB.deleteMaterial(Number(e.target.closest("li").dataset.id));
+    toast("Material removed"); await loadMats();
+  }));
+
+  await guard(loadRequests); await guard(loadSubs); await guard(loadMats);
+})();
+}
+};
+// Tiny router: each "page" is a template shown according to the address hash, e.g. #database
+window.BOOT = function () {
+  const name = location.hash.slice(1).split("?")[0] || "index";
+  window.PAGE = PAGES[name] ? name : "index";
+  document.body.querySelectorAll("body > header, body > main, body > footer, body > .demo-note, #toast").forEach((n) => n.remove());
+  document.body.appendChild(document.getElementById("page-" + PAGE).content.cloneNode(true));
+  APP(); PAGES[PAGE]();
+  const hs = document.querySelector(".hero-search");
+  if (hs) hs.addEventListener("submit", (e) => { e.preventDefault(); location.hash = "#database?q=" + encodeURIComponent(hs.q.value); });
+  window.scrollTo(0, 0);
+};
+window.addEventListener("hashchange", () => { if (PAGES[location.hash.slice(1).split("?")[0]]) BOOT(); });
+BOOT();
+</script>
+</body>
+</html>
